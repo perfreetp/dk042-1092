@@ -7,7 +7,7 @@
 }
 
 .overviewCard {
-  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  background: $color-bg-card;
   margin: $spacing-md $spacing-lg;
   border-radius: $radius-lg;
   padding: $spacing-lg;
@@ -24,292 +24,19 @@
 .overviewTitle {
   font-size: $font-size-lg;
   font-weight: $font-weight-semibold;
-  color: $color-text-white;
+  color: $color-text-primary;
+  @include text-ellipsis;
+  flex: 1;
+  margin-right: $spacing-md;
 }
 
 .runBtn {
-  background: rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
   border-radius: $radius-button;
-  padding: 10rpx 24rpx;
-  transition: all $transition-base;
-
-  &:active {
-    opacity: 0.8;
-  }
-}
-
-.runBtnText {
-  font-size: $font-size-sm;
-  color: $color-text-white;
-  font-weight: $font-weight-medium;
-  white-space: nowrap;
-}
-
-.filterBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 $spacing-lg;
-  margin-bottom: $spacing-md;
-}
-
-.filterLeft {
-  display: flex;
-  align-items: center;
-  gap: $spacing-sm;
-}
-
-.filterPicker {
-  background: $color-bg-card;
-  border-radius: $radius-sm;
-  padding: 10rpx 20rpx;
-  border: 1rpx solid $color-border;
-}
-
-.filterPickerText {
-  font-size: $font-size-sm;
-  color: $color-text-secondary;
-}
-
-.tabBarInline {
-  display: flex;
-  background: $color-bg-card;
-  border-radius: $radius-sm;
-  padding: 4rpx;
-  border: 1rpx solid $color-border;
-}
-
-.tabInline {
-  padding: 8rpx 20rpx;
-  border-radius: $radius-xs;
-}
-
-.tabInlineActive {
-  background: $color-primary;
-}
-
-.tabInlineText {
-  font-size: $font-size-sm;
-  color: $color-text-secondary;
-}
-
-.tabInlineActiveText {
-  color: $color-text-white;
-}
-
-.overviewStats {
-  display: flex;
-  justify-content: space-around;
-}
-
-.overviewStatItem {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.overviewStatValue {
-  font-size: $font-size-xl;
-  font-weight: $font-weight-bold;
-  color: $color-text-white;
-}
-
-.overviewStatLabel {
-  font-size: $font-size-xs;
-  color: rgba(255, 255, 255, 0.75);
-  margin-top: 4rpx;
-}
-
-.tabBar {
-  display: flex;
-  padding: $spacing-sm $spacing-lg;
-  gap: $spacing-sm;
-  margin-bottom: $spacing-sm;
-}
-
-.tab {
-  padding: 8rpx 24rpx;
-  border-radius: $radius-button;
-  background: $color-bg-card;
-  border: 1rpx solid $color-border;
-  transition: all $transition-base;
-
-  &:active {
-    opacity: 0.85;
-  }
-}
-
-.tabActive {
-  background: $color-primary;
-  border-color: $color-primary;
-}
-
-.tabText {
-  font-size: $font-size-sm;
-  color: $color-text-secondary;
-  white-space: nowrap;
-}
-
-.tabActiveText {
-  color: $color-text-white;
-}
-
-.resultsList {
-  padding: 0 $spacing-lg;
-  padding-bottom: $spacing-md;
-}
-
-.compareMode {
-  padding: 0 $spacing-lg;
-  padding-bottom: $spacing-md;
-}
-
-.compareCard {
-  background: $color-bg-card;
-  border-radius: $radius-lg;
-  padding: $spacing-lg;
-  box-shadow: $shadow-card;
-  margin-bottom: $spacing-md;
-}
-
-.compareHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: $spacing-md;
-  padding-bottom: $spacing-sm;
-  border-bottom: 1rpx solid $color-divider;
-}
-
-.compareName {
-  font-size: $font-size-md;
-  font-weight: $font-weight-semibold;
-  color: $color-text-primary;
-}
-
-.compareOutput {
-  font-size: $font-size-md;
-  color: $color-text-primary;
-  line-height: $line-height-loose;
-  white-space: pre-wrap;
-  margin-bottom: $spacing-md;
-}
-
-.commentSection {
-  margin: $spacing-md $spacing-lg;
-  background: $color-bg-card;
-  border-radius: $radius-lg;
-  padding: $spacing-lg;
-  box-shadow: $shadow-card;
-}
-
-.commentTitle {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  color: $color-text-primary;
-  margin-bottom: $spacing-md;
-}
-
-.commentItem {
-  display: flex;
-  padding: $spacing-md 0;
-  border-bottom: 1rpx solid $color-divider;
-}
-
-.commentItem:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.commentAvatar {
-  width: 64rpx;
-  height: 64rpx;
-  border-radius: 50%;
-  background: $color-bg-hover;
-  margin-right: $spacing-md;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-
-.commentAvatarImg {
-  width: 64rpx;
-  height: 64rpx;
-}
-
-.commentBody {
-  flex: 1;
-  min-width: 0;
-}
-
-.commentAuthor {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-semibold;
-  color: $color-text-primary;
-  margin-bottom: 4rpx;
-}
-
-.commentContent {
-  font-size: $font-size-md;
-  color: $color-text-secondary;
-  line-height: $line-height-normal;
-}
-
-.commentTime {
-  font-size: $font-size-xs;
-  color: $color-text-tertiary;
-  margin-top: 4rpx;
-}
-
-.commentInput {
-  display: flex;
-  align-items: center;
-  margin-top: $spacing-md;
-  padding-top: $spacing-md;
-  border-top: 1rpx solid $color-divider;
-}
-
-.commentInputField {
-  flex: 1;
   height: $button-height-sm;
-  background: $color-bg-page;
-  border-radius: $radius-md;
-  padding: 0 $spacing-md;
-  font-size: $font-size-sm;
-  color: $color-text-primary;
-  margin-right: $spacing-sm;
-}
-
-.commentInputField::placeholder {
-  color: $color-text-disabled;
-}
-
-.commentSendBtn {
-  background: $color-primary;
-  border-radius: $radius-button;
-  padding: 10rpx 24rpx;
-  flex-shrink: 0;
-  transition: all $transition-base;
-
-  &:active {
-    opacity: 0.85;
-  }
-}
-
-.commentSendText {
-  font-size: $font-size-sm;
-  color: $color-text-white;
-  font-weight: $font-weight-medium;
-  white-space: nowrap;
-}
-
-.exportBtn {
-  margin: $spacing-md $spacing-lg;
-  background: $color-bg-card;
-  border-radius: $radius-lg;
-  padding: $spacing-md;
+  padding: 0 $spacing-lg;
   @include flex-center;
-  box-shadow: $shadow-card;
-  transition: all $transition-base;
+  flex-shrink: 0;
 
   &:active {
     opacity: 0.85;
@@ -317,8 +44,401 @@
   }
 }
 
+.runBtnText {
+  font-size: $font-size-sm;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+  white-space: nowrap;
+}
+
+.overviewStats {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.overviewStatItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $spacing-sm;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+}
+
+.overviewStatValue {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}
+
+.overviewStatLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}
+
+.filterBar {
+  display: flex;
+  align-items: center;
+  padding: 0 $spacing-lg;
+  margin-bottom: $spacing-md;
+  gap: $spacing-md;
+}
+
+.filterPicker {
+  background: $color-bg-card;
+  border-radius: $radius-sm;
+  padding: $spacing-sm $spacing-md;
+  box-shadow: $shadow-card;
+  flex-shrink: 0;
+}
+
+.filterPickerText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.viewModeTabs {
+  display: flex;
+  background: $color-bg-card;
+  border-radius: $radius-sm;
+  padding: 4rpx;
+  box-shadow: $shadow-card;
+  flex: 1;
+  max-width: 320rpx;
+}
+
+.viewModeTab {
+  flex: 1;
+  height: 52rpx;
+  border-radius: $radius-xs;
+  @include flex-center;
+  transition: all $transition-fast;
+}
+
+.viewModeTabActive {
+  background: $color-primary;
+}
+
+.viewModeTabText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  font-weight: $font-weight-medium;
+}
+
+.viewModeTabActiveText {
+  color: $color-text-white;
+}
+
+.compareContainer {
+  padding: 0 $spacing-lg;
+}
+
+.sampleGroup {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.sampleGroupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-sm;
+}
+
+.sampleGroupName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.sampleGroupCommentBtn {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
+.versionCompareScroll {
+  margin: 0 (-$spacing-md);
+  padding: 0 $spacing-md;
+}
+
+.versionCompareRow {
+  display: flex;
+  gap: $spacing-sm;
+  padding-bottom: $spacing-sm;
+}
+
+.versionCard {
+  width: 420rpx;
+  flex-shrink: 0;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  border: 1rpx solid $color-border;
+}
+
+.versionCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-sm;
+}
+
+.versionBadge {
+  background: $color-primary;
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+}
+
+.versionBadgeText {
+  font-size: $font-size-xs;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+}
+
+.ratingDiff {
+  padding: 2rpx 10rpx;
+  border-radius: $radius-xs;
+}
+
+.ratingDiffUp {
+  background: rgba($color-success, 0.15);
+}
+
+.ratingDiffDown {
+  background: rgba($color-error, 0.15);
+}
+
+.ratingDiffText {
+  font-size: 20rpx;
+  font-weight: $font-weight-semibold;
+  @at-root .ratingDiffUp & {
+    color: $color-success;
+  }
+  @at-root .ratingDiffDown & {
+    color: $color-error;
+  }
+}
+
+.versionCardOutput {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: $spacing-sm;
+}
+
+.versionCardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.versionCardTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.sampleComments {
+  margin-top: $spacing-sm;
+  padding-top: $spacing-sm;
+  border-top: 1rpx solid $color-border;
+}
+
+.sampleCommentItem {
+  display: flex;
+  margin-bottom: $spacing-sm;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.sampleCommentAvatar {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  margin-right: $spacing-sm;
+  flex-shrink: 0;
+}
+
+.sampleCommentBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.sampleCommentAuthor {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+  margin-bottom: 2rpx;
+}
+
+.sampleCommentText {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: $line-height-tight;
+}
+
+.resultsList {
+  padding: 0 $spacing-lg;
+}
+
+.resultItem {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.resultHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+  gap: $spacing-sm;
+}
+
+.resultVersionBadge {
+  background: $color-primary;
+  padding: 2rpx 10rpx;
+  border-radius: $radius-xs;
+}
+
+.resultVersionText {
+  font-size: $font-size-xs;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+}
+
+.resultSampleName {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+  flex: 1;
+}
+
+.resultOutput {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+  margin-bottom: $spacing-sm;
+  white-space: pre-wrap;
+}
+
+.resultFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.resultTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.exportBtn {
+  margin: $spacing-md $spacing-lg 0;
+  background: $color-bg-card;
+  border: 2rpx dashed $color-primary;
+  border-radius: $radius-lg;
+  height: $button-height-md;
+  @include flex-center;
+  box-shadow: $shadow-card;
+
+  &:active {
+    opacity: 0.75;
+  }
+}
+
 .exportBtnText {
   font-size: $font-size-md;
   color: $color-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.commentModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 200;
+  @include flex-center;
+}
+
+.commentModalContent {
+  width: 686rpx;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-popup;
+}
+
+.commentModalTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  display: block;
+}
+
+.commentModalInput {
+  width: 100%;
+  min-height: 160rpx;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  line-height: $line-height-normal;
+  border: 1rpx solid $color-border;
+  box-sizing: border-box;
+}
+
+.commentModalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+}
+
+.commentCancelBtn {
+  height: $button-height-sm;
+  padding: 0 $spacing-lg;
+  background: $color-bg-page;
+  border-radius: $radius-button;
+  @include flex-center;
+  border: 1rpx solid $color-border;
+}
+
+.commentCancelText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.commentSendBtn {
+  height: $button-height-sm;
+  padding: 0 $spacing-lg;
+  background: $color-primary;
+  border-radius: $radius-button;
+  @include flex-center;
+}
+
+.commentSendText {
+  font-size: $font-size-sm;
+  color: $color-text-white;
   font-weight: $font-weight-medium;
 }

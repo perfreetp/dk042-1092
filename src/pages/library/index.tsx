@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, ScrollView, Input, Textarea } from '@tarojs/components';
+import { View, Text, ScrollView, Input, Textarea, Picker } from '@tarojs/components';
 import classnames from 'classnames';
 import Taro from '@tarojs/taro';
 import { usePromptStore } from '@/store/usePromptStore';
@@ -14,21 +14,32 @@ const TAB_OPTIONS = [
   { key: 'team', label: '团队模板' },
 ];
 
-const DEFAULT_CATEGORIES = ['全部', '角色设定', '输出格式', '约束条件', '语气风格', '分析框架', '功能模板'];
-
 const LibraryPage = () => {
   const {
-    fragments, toggleFragmentFavorite, incrementFragmentUsage,
+    fragments, categories,
+    toggleFragmentFavorite, incrementFragmentUsage,
     addFragment, updateFragmentCategory, setPendingFragment,
+    addCategory, renameCategory, deleteCategory, moveFragmentToCategory,
   } = usePromptStore();
+
   const [activeTab, setActiveTab] = useState('mine');
   const [searchText, setSearchText] = useState('');
   const [activeCategory, setActiveCategory] = useState('全部');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [showMoveModal, setShowMoveModal] = useState(false);
+  const [movingFragment, setMovingFragment] = useState<Fragment | null>(null);
   const [newFragTitle, setNewFragTitle] = useState('');
   const [newFragContent, setNewFragContent] = useState('');
-  const [newFragCategory, setNewFragCategory] = useState('通用');
-  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [newFragCategory, setNewFragCategory] = useState(categories[0] || '其他');
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [editingCategory, setEditingCategory] = useState<string | null>(null);
+  const [editingCategoryName, setEditingCategoryName] = useState('');
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
+
+  const displayCategories = useMemo(() => {
+    return ['全部', ...categories];
+  }, [categories]);
 
   const displayFragments = useMemo(() => {
     let list = [...fragments];
@@ -95,16 +106,90 @@ const LibraryPage = () => {
     console.info('[Library] Fragment added:', fragment.id);
   };
 
-  const handleCategoryChange = (category: string) => {
-    setActiveCategory(category);
-    setShowCategoryPicker(false);
+  const handleAddCategory = () => {
+    if (!newCategoryName.trim()) {
+      Taro.showToast({ title: '请输入分类名', icon: 'none' });
+      return;
+    }
+    if (categories.includes(newCategoryName.trim())) {
+      Taro.showToast({ title: '分类已存在', icon: 'none' });
+      return;
+    }
+    addCategory(newCategoryName.trim());
+    setNewCategoryName('');
+    setShowNewCategoryInput(false);
+    Taro.showToast({ title: '分类已添加', icon: 'success' });
+    console.info('[Library] Category added:', newCategoryName.trim());
+  };
+
+  const handleRenameCategory = () => {
+    if (!editingCategory || !editingCategoryName.trim()) {
+      Taro.showToast({ title: '请输入新分类名', icon: 'none' });
+      return;
+    }
+    if (categories.includes(editingCategoryName.trim())) {
+      Taro.showToast({ title: '分类名已存在', icon: 'none' });
+      return;
+    }
+    renameCategory(editingCategory, editingCategoryName.trim());
+    setEditingCategory(null);
+    setEditingCategoryName('');
+    Taro.showToast({ title: '已重命名', icon: 'success' });
+    console.info('[Library] Category renamed:', editingCategory, '→', editingCategoryName.trim());
+  };
+
+  const handleDeleteCategory = (category: string) => {
+    Taro.showModal({
+      title: '删除分类',
+      content: `确定删除「${category}」分类吗？\n该分类下的片段将移至「其他」。`,
+      confirmColor: '#ff4d4f',
+      success: (res) => {
+        if (res.confirm) {
+          deleteCategory(category);
+          if (activeCategory === category) {
+            setActiveCategory('全部');
+          }
+          Taro.showToast({ title: '已删除', icon: 'success' });
+          console.info('[Library] Category deleted:', category);
+        }
+      },
+    });
+  };
+
+  const openMoveModal = (fragment: Fragment) => {
+    setMovingFragment(fragment);
+    setShowMoveModal(true);
+  };
+
+  const handleMoveFragment = (targetCategory: string) => {
+    if (!movingFragment) return;
+    moveFragmentToCategory(movingFragment.id, targetCategory);
+    setShowMoveModal(false);
+    setMovingFragment(null);
+    Taro.showToast({ title: '已移动', icon: 'success' });
+    console.info('[Library] Fragment moved:', movingFragment.id, '→', targetCategory);
+  };
+
+  const startEditCategory = (cat: string) => {
+    setEditingCategory(cat);
+    setEditingCategoryName(cat);
+  };
+
+  const cancelEditCategory = () => {
+    setEditingCategory(null);
+    setEditingCategoryName('');
   };
 
   return (
     <View className={styles.page}>
       <View className={styles.header}>
-        <Text className={styles.title}>素材库</Text>
-        <Text className={styles.subtitle}>常用片段快速复用</Text>
+        <View className={styles.headerLeft}>
+          <Text className={styles.title}>素材库</Text>
+          <Text className={styles.subtitle}>常用片段快速复用</Text>
+        </View>
+        <View className={styles.manageBtn} onClick={() => setShowCategoryModal(true)}>
+          <Text className={styles.manageBtnText}>⚙ 管理</Text>
+        </View>
       </View>
 
       <View className={styles.searchBar}>
@@ -132,11 +217,11 @@ const LibraryPage = () => {
       </View>
 
       <ScrollView scrollX className={styles.categoryBar}>
-        {DEFAULT_CATEGORIES.map((cat) => (
+        {displayCategories.map((cat) => (
           <View
             key={cat}
             className={classnames(styles.categoryItem, activeCategory === cat && styles.categoryActive)}
-            onClick={() => handleCategoryChange(cat)}
+            onClick={() => setActiveCategory(cat)}
           >
             <Text className={classnames(styles.categoryText, activeCategory === cat && styles.categoryTextActive)}>
               {cat}
@@ -153,7 +238,9 @@ const LibraryPage = () => {
               fragment={fragment}
               onUse={() => handleUseFragment(fragment)}
               onFavorite={() => handleToggleFavorite(fragment.id)}
+              onMove={() => openMoveModal(fragment)}
               showFavorite
+              showMove
             />
           ))}
         </ScrollView>
@@ -185,8 +272,8 @@ const LibraryPage = () => {
 
             <View className={styles.formItem}>
               <Text className={styles.formLabel}>分类</Text>
-              <View className={styles.categoryOptions}>
-                {DEFAULT_CATEGORIES.filter(c => c !== '全部').map((cat) => (
+              <ScrollView scrollX className={styles.categoryOptions}>
+                {categories.map((cat) => (
                   <View
                     key={cat}
                     className={classnames(
@@ -203,7 +290,7 @@ const LibraryPage = () => {
                     </Text>
                   </View>
                 ))}
-              </View>
+              </ScrollView>
             </View>
 
             <View className={styles.formItem}>
@@ -223,6 +310,121 @@ const LibraryPage = () => {
               </View>
               <View className={styles.modalBtnConfirm} onClick={handleAddFragment}>
                 <Text className={styles.modalBtnConfirmText}>保存</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {showCategoryModal && (
+        <View className={styles.modal} onClick={() => setShowCategoryModal(false)}>
+          <View className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <Text className={styles.modalTitle}>分类管理</Text>
+
+            <ScrollView scrollY style={{ maxHeight: '50vh' }}>
+              {categories.map((cat) => (
+                <View key={cat} className={styles.categoryManageItem}>
+                  {editingCategory === cat ? (
+                    <View className={styles.categoryEditRow}>
+                      <Input
+                        className={styles.categoryEditInput}
+                        value={editingCategoryName}
+                        onInput={(e) => setEditingCategoryName(e.detail.value)}
+                        autoFocus
+                      />
+                      <View className={styles.categoryEditBtn} onClick={handleRenameCategory}>
+                        <Text className={styles.categoryEditBtnText}>✓</Text>
+                      </View>
+                      <View className={styles.categoryEditBtnSecondary} onClick={cancelEditCategory}>
+                        <Text className={styles.categoryEditBtnSecondaryText}>✕</Text>
+                      </View>
+                    </View>
+                  ) : (
+                    <>
+                      <Text className={styles.categoryManageName}>{cat}</Text>
+                      <View className={styles.categoryManageActions}>
+                        <Text
+                          className={styles.categoryActionText}
+                          onClick={() => startEditCategory(cat)}
+                        >
+                          ✏️ 重命名
+                        </Text>
+                        <Text
+                          className={styles.categoryActionTextDanger}
+                          onClick={() => handleDeleteCategory(cat)}
+                        >
+                          🗑 删除
+                        </Text>
+                      </View>
+                    </>
+                  )}
+                </View>
+              ))}
+
+              {showNewCategoryInput ? (
+                <View className={styles.categoryEditRow}>
+                  <Input
+                    className={styles.categoryEditInput}
+                    placeholder="输入新分类名"
+                    value={newCategoryName}
+                    onInput={(e) => setNewCategoryName(e.detail.value)}
+                    autoFocus
+                  />
+                  <View className={styles.categoryEditBtn} onClick={handleAddCategory}>
+                    <Text className={styles.categoryEditBtnText}>✓</Text>
+                  </View>
+                  <View className={styles.categoryEditBtnSecondary} onClick={() => {
+                    setShowNewCategoryInput(false);
+                    setNewCategoryName('');
+                  }}>
+                    <Text className={styles.categoryEditBtnSecondaryText}>✕</Text>
+                  </View>
+                </View>
+              ) : (
+                <View className={styles.addCategoryBtn} onClick={() => setShowNewCategoryInput(true)}>
+                  <Text className={styles.addCategoryBtnText}>+ 新建分类</Text>
+                </View>
+              )}
+            </ScrollView>
+
+            <View className={styles.modalActions}>
+              <View className={styles.modalBtnConfirm} onClick={() => setShowCategoryModal(false)}>
+                <Text className={styles.modalBtnConfirmText}>完成</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {showMoveModal && movingFragment && (
+        <View className={styles.modal} onClick={() => setShowMoveModal(false)}>
+          <View className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <Text className={styles.modalTitle}>移动到分类</Text>
+            <Text className={styles.modalSubtitle}>
+              当前分类：{movingFragment.category}
+            </Text>
+
+            <ScrollView scrollY style={{ maxHeight: '40vh' }}>
+              {categories.map((cat) => (
+                <View
+                  key={cat}
+                  className={classnames(
+                    styles.moveCategoryItem,
+                    movingFragment.category === cat && styles.moveCategoryItemActive,
+                  )}
+                  onClick={() => handleMoveFragment(cat)}
+                >
+                  <Text className={styles.moveCategoryText}>{cat}</Text>
+                  {movingFragment.category === cat && (
+                    <Text className={styles.moveCategoryCheck}>✓</Text>
+                  )}
+                </View>
+              ))}
+            </ScrollView>
+
+            <View className={styles.modalActions}>
+              <View className={styles.modalBtnCancel} onClick={() => setShowMoveModal(false)}>
+                <Text className={styles.modalBtnCancelText}>取消</Text>
               </View>
             </View>
           </View>

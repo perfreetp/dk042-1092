@@ -7,17 +7,21 @@ import styles from './index.module.scss';
 interface FragmentCardProps {
   fragment: Fragment;
   showFavorite?: boolean;
+  showMove?: boolean;
   onClick?: () => void;
   onUse?: () => void;
   onFavorite?: () => void;
+  onMove?: () => void;
 }
 
 const FragmentCard: React.FC<FragmentCardProps> = ({
   fragment,
   showFavorite = false,
+  showMove = false,
   onClick,
   onUse,
   onFavorite,
+  onMove,
 }) => {
   return (
     <View className={classnames(styles.card, fragment.isFavorite && styles.cardFavorite)} onClick={onClick}>
@@ -41,6 +45,14 @@ const FragmentCard: React.FC<FragmentCardProps> = ({
         </View>
         <View className={styles.useInfo}>
           <Text className={styles.useText}>使用 {fragment.usageCount} 次</Text>
+          {showMove && (
+            <View
+              className={styles.moveBtn}
+              onClick={(e) => { e.stopPropagation(); onMove?.(); }}
+            >
+              <Text className={styles.moveBtnText}>移动</Text>
+            </View>
+          )}
           <View className={styles.useBtn} onClick={(e) => { e.stopPropagation(); onUse?.(); }}>
             <Text className={styles.useBtnText}>使用</Text>
           </View>

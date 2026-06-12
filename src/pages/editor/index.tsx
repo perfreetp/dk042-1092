@@ -81,29 +81,17 @@ const EditorPage = () => {
 
   const handleSaveVersion = () => {
     if (!currentExp) return;
-    const vars: Variable[] = variables.map((v) => {
-      const existing = currentExp.variables.find((ev) => ev.name === v);
-      return { name: v, defaultValue: existing?.defaultValue || '' };
-    });
-    const nextVersionNum = currentExp.versions.length > 0
-      ? Math.max(...currentExp.versions.map(v => v.versionNumber)) + 1
-      : 1;
-    const version: PromptVersion = {
-      id: generateId(),
-      experimentId: currentExp.id,
-      content: promptContent,
-      variables: vars,
-      createdAt: new Date().toISOString(),
-      avgRating: 0,
-      runCount: 0,
-      note: `版本 ${nextVersionNum}`,
-      versionNumber: nextVersionNum,
-    };
-    addVersion(version);
-    updateExperimentPrompt(currentExp.id, promptContent, vars);
+    if (promptContent === currentExp.promptContent && currentExp.versions.length > 0) {
+      Taro.showToast({ title: '内容未变化', icon: 'none' });
+      return;
+    }
+    updateExperimentPrompt(currentExp.id, promptContent, []);
+    const newVersion = addVersion(currentExp.id, `版本 ${currentExp.versions.length + 1}`);
     lastUpdateAt.current = new Date().toISOString();
-    Taro.showToast({ title: `v${nextVersionNum} 已保存`, icon: 'success' });
-    console.info('[Editor] Version saved:', version.id);
+    if (newVersion) {
+      Taro.showToast({ title: `v${newVersion.versionNumber} 已保存`, icon: 'success' });
+      console.info('[Editor] Version saved:', newVersion.id);
+    }
   };
 
   const openAddSample = () => {
@@ -144,26 +132,61 @@ const EditorPage = () => {
       Taro.showToast({ title: '请先添加示例输入', icon: 'none' });
       return;
     }
+
+    let runVersionId = '';
+    let runVersionNum = 0;
+
+    if (currentExp.versions.length === 0) {
+      const newVersion = addVersion(currentExp.id, '初始版本');
+      if (newVersion) {
+        runVersionId = newVersion.id;
+        runVersionNum = newVersion.versionNumber;
+      }
+    } else {
+      const latest = currentExp.versions[0];
+      if (currentExp.promptContent !== latest.content) {
+        const newVersion = addVersion(currentExp.id, `v${currentExp.versions.length + 1}`);
+        if (newVersion) {
+          runVersionId = newVersion.id;
+          runVersionNum = newVersion.versionNumber;
+        }
+      } else {
+        runVersionId = latest.id;
+        runVersionNum = latest.versionNumber;
+      }
+    }
+
+    if (!runVersionId) {
+      Taro.showToast({ title: '保存版本失败', icon: 'none' });
+      return;
+    }
+
     setIsRunning(true);
-    clearResults(currentExp.id);
+    const oldSampleResults = currentExp.results.filter(
+      (r) => r.versionId !== runVersionId
+    );
 
     setTimeout(() => {
+      const newResults: RunResult[] = [];
       currentExp.sampleInputs.forEach((sample) => {
         const responseIdx = Math.floor(Math.random() * MOCK_RESPONSES.length);
         const result: RunResult = {
           id: generateId(),
           sampleInputId: sample.id,
           sampleName: sample.name,
-          output: `[模拟回答] ${MOCK_RESPONSES[responseIdx]}\n\n基于提示词生成的回复（样例：${sample.name}）`,
+          output: `[模拟回答 v${runVersionNum}] ${MOCK_RESPONSES[responseIdx]}\n\n基于 v${runVersionNum} 提示词生成的回复（样例：${sample.name}）`,
           rating: 0,
           createdAt: new Date().toISOString(),
+          versionId: runVersionId,
+          versionNumber: runVersionNum,
         };
+        newResults.push(result);
         addRunResult(currentExp.id, result);
       });
       updateExperiment(currentExp.id, { status: 'testing' });
       setIsRunning(false);
-      Taro.showToast({ title: '试跑完成', icon: 'success' });
-      console.info('[Editor] Batch run completed');
+      Taro.showToast({ title: `v${runVersionNum} 试跑完成`, icon: 'success' });
+      console.info('[Editor] Batch run completed for version:', runVersionNum);
     }, 1500);
   };
 
@@ -234,6 +257,13 @@ const EditorPage = () => {
 
   return (
     <View className={styles.page}>
+      {currentExp?.baseVersionNumber && (
+        <View className={styles.baseVersionBanner}>
+          <Text className={styles.baseVersionText}>
+            🎯 正在基于 v{currentExp.baseVersionNumber} 版本编辑
+          </Text>
+        </View>
+      )}
       <View className={styles.section}>
         <View className={styles.sectionHeader}>
           <Text className={styles.sectionTitle}>提示词内容</Text>

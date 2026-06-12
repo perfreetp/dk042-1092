@@ -16,6 +16,8 @@ export interface RunResult {
   output: string;
   rating: number;
   createdAt: string;
+  versionId: string;
+  versionNumber: number;
 }
 
 export interface PromptVersion {
@@ -28,6 +30,7 @@ export interface PromptVersion {
   runCount: number;
   note: string;
   versionNumber: number;
+  baseVersionNumber?: number;
 }
 
 export interface Comment {
@@ -36,6 +39,10 @@ export interface Comment {
   avatar: string;
   content: string;
   createdAt: string;
+  targetType: 'experiment' | 'version' | 'result' | 'sample';
+  targetId: string;
+  versionNumber?: number;
+  sampleName?: string;
 }
 
 export interface Experiment {
@@ -52,6 +59,7 @@ export interface Experiment {
   tags: string[];
   createdAt: string;
   updatedAt: string;
+  baseVersionNumber?: number;
 }
 
 export interface Fragment {

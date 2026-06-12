@@ -89,12 +89,30 @@
 .useInfo {
   display: flex;
   align-items: center;
+  gap: $spacing-xs;
 }
 
 .useText {
   font-size: $font-size-xs;
   color: $color-text-tertiary;
-  margin-right: $spacing-sm;
+}
+
+.moveBtn {
+  background: $color-bg-page;
+  border: 1rpx solid $color-border;
+  border-radius: $radius-button;
+  padding: 6rpx 18rpx;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.moveBtnText {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  white-space: nowrap;
 }
 
 .useBtn {

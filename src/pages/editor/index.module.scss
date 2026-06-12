@@ -7,6 +7,20 @@
   padding-bottom: 200rpx;
 }
 
+.baseVersionBanner {
+  background: linear-gradient(135deg, rgba($color-primary, 0.1) 0%, rgba($color-primary-light, 0.15) 100%);
+  margin: 0 0 $spacing-md;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  border: 1rpx solid rgba($color-primary, 0.3);
+}
+
+.baseVersionText {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
 .section {
   margin-bottom: $spacing-lg;
 }
