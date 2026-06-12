@@ -1,0 +1,27 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  display: flex;
+  align-items: center;
+}
+
+.star {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-text-disabled;
+  margin-right: 4rpx;
+}
+
+.starFilled {
+  color: $color-star;
+}
+
+.starEditable {
+  cursor: pointer;
+  transition: transform $transition-fast;
+
+  &:active {
+    transform: scale(1.2);
+  }
+}

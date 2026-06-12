@@ -1,0 +1,9 @@
+import type { PromptVersion } from '@/types';
+
+export const mockVersions: PromptVersion[] = [
+  { id: 'v001', experimentId: 'exp001', content: '你是一位客服，请回复客户问题。\n客户问题：{{customer_question}}', variables: [{ name: 'customer_question', defaultValue: '' }], createdAt: '2026-06-08T14:00:00Z', avgRating: 2.5, runCount: 3, note: '初版' },
+  { id: 'v002', experimentId: 'exp001', content: '你是一位专业的客服人员，请根据客户问题生成礼貌、专业的回复。\n\n客户问题：{{customer_question}}\n产品类型：{{product_type}}\n情绪状态：{{emotion}}\n\n请生成回复，要求：1. 语气亲切 2. 解决问题 3. 不超过200字', variables: [{ name: 'customer_question', defaultValue: '' }, { name: 'product_type', defaultValue: '电子产品' }, { name: 'emotion', defaultValue: '平和' }], createdAt: '2026-06-10T10:00:00Z', avgRating: 4.3, runCount: 3, note: '增加产品和情绪变量' },
+  { id: 'v003', experimentId: 'exp002', content: '你是一位资深电商文案，请为以下产品生成吸引人的详情描述。\n\n产品名称：{{product_name}}\n核心卖点：{{key_features}}\n目标人群：{{target_audience}}\n\n要求：1. 突出核心卖点 2. 语气有感染力 3. 300字以内', variables: [{ name: 'product_name', defaultValue: '' }, { name: 'key_features', defaultValue: '' }, { name: 'target_audience', defaultValue: '年轻白领' }], createdAt: '2026-06-09T15:00:00Z', avgRating: 4.5, runCount: 2, note: '首版' },
+  { id: 'v004', experimentId: 'exp003', content: '你是一位社交媒体运营专家，请为以下内容生成3个吸引眼球的标题。\n\n内容主题：{{topic}}\n平台：{{platform}}\n风格：{{style}}\n\n要求：1. 符合平台调性 2. 有吸引力 3. 包含关键词', variables: [{ name: 'topic', defaultValue: '' }, { name: 'platform', defaultValue: '小红书' }, { name: 'style', defaultValue: '活泼' }], createdAt: '2026-06-11T08:00:00Z', avgRating: 3.0, runCount: 1, note: '初版尝试' },
+  { id: 'v005', experimentId: 'exp005', content: '你是一位知识问答助手，请根据用户问题从以下上下文中找到准确答案。\n\n上下文：{{context}}\n用户问题：{{question}}\n\n要求：1. 仅根据上下文回答 2. 如无答案请说明 3. 引用来源段落', variables: [{ name: 'context', defaultValue: '' }, { name: 'question', defaultValue: '' }], createdAt: '2026-06-11T13:00:00Z', avgRating: 5.0, runCount: 1, note: '初版效果不错' },
+];

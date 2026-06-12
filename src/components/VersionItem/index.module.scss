@@ -1,0 +1,139 @@
+@use '@/styles/variables.scss' as *;
+
+.item {
+  display: flex;
+  padding-bottom: $spacing-lg;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.95;
+  }
+}
+
+.itemCurrent {
+  .content {
+    background: rgba($color-primary, 0.04);
+    border-color: rgba($color-primary, 0.2);
+  }
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: $spacing-md;
+  padding-top: 8rpx;
+  flex-shrink: 0;
+}
+
+.dot {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  background: $color-border;
+  flex-shrink: 0;
+}
+
+.dotLatest {
+  background: $color-primary;
+  box-shadow: 0 0 0 6rpx rgba($color-primary, 0.2);
+}
+
+.line {
+  width: 4rpx;
+  flex: 1;
+  background: $color-border;
+  margin-top: 8rpx;
+  min-height: 40rpx;
+}
+
+.content {
+  flex: 1;
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  border: 1rpx solid $color-border;
+  min-width: 0;
+}
+
+.contentHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-sm;
+}
+
+.versionInfo {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  margin-right: $spacing-sm;
+}
+
+.versionNote {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+}
+
+.currentBadge {
+  background: $color-primary;
+  border-radius: $radius-xs;
+  padding: 2rpx 12rpx;
+  margin-left: $spacing-sm;
+  flex-shrink: 0;
+}
+
+.currentBadgeText {
+  font-size: $font-size-xs;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+.versionContent {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  @include text-ellipsis-multi(2);
+  line-height: $line-height-normal;
+  margin-bottom: $spacing-sm;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.metaText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.metaDot {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin: 0 6rpx;
+}
+
+.rollbackBtn {
+  margin-top: $spacing-sm;
+  align-self: flex-start;
+  background: $color-tag-bg;
+  border-radius: $radius-button;
+  padding: 8rpx 24rpx;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.85;
+    transform: scale(0.97);
+  }
+}
+
+.rollbackBtnText {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+}

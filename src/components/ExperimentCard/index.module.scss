@@ -1,0 +1,120 @@
+@use '@/styles/variables.scss' as *;
+
+.card {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-md;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.95;
+    transform: scale(0.99);
+  }
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-sm;
+}
+
+.cardTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  flex: 1;
+  @include text-ellipsis;
+  margin-right: $spacing-sm;
+}
+
+.statusTag {
+  padding: 4rpx 16rpx;
+  border-radius: $radius-round;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.statusDraft {
+  background: rgba($color-text-tertiary, 0.12);
+
+  .statusText {
+    color: $color-text-tertiary;
+  }
+}
+
+.statusTesting {
+  background: rgba($color-warning, 0.12);
+
+  .statusText {
+    color: $color-warning;
+  }
+}
+
+.statusStable {
+  background: rgba($color-success, 0.12);
+
+  .statusText {
+    color: $color-success;
+  }
+}
+
+.statusText {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+}
+
+.cardDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  @include text-ellipsis-multi(2);
+  line-height: $line-height-normal;
+  margin-bottom: $spacing-sm;
+}
+
+.cardTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-md;
+}
+
+.tag {
+  background: $color-tag-bg;
+  border-radius: $radius-xs;
+  padding: 2rpx 12rpx;
+}
+
+.tagText {
+  font-size: $font-size-xs;
+  color: $color-tag-text;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stats {
+  display: flex;
+  align-items: center;
+}
+
+.statText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.statDot {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin: 0 6rpx;
+}
+
+.timeText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
