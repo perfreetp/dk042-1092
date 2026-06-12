@@ -17,7 +17,7 @@ const TAB_OPTIONS = [
 const LibraryPage = () => {
   const {
     fragments, categories,
-    toggleFragmentFavorite, incrementFragmentUsage,
+    toggleFragmentFavorite, toggleFragmentTeamTemplate, incrementFragmentUsage,
     addFragment, updateFragmentCategory, setPendingFragment,
     addCategory, renameCategory, deleteCategory, moveFragmentToCategory,
   } = usePromptStore();
@@ -45,6 +45,8 @@ const LibraryPage = () => {
     let list = [...fragments];
     if (activeTab === 'mine') {
       list = list.filter((f) => f.isFavorite);
+    } else if (activeTab === 'team') {
+      list = list.filter((f) => f.isTeamTemplate);
     }
     if (activeCategory !== '全部') {
       list = list.filter((f) => f.category === activeCategory);
@@ -67,6 +69,18 @@ const LibraryPage = () => {
         icon: 'success',
       });
       console.info('[Library] Toggle favorite:', fragmentId);
+    }
+  };
+
+  const handleToggleTeamTemplate = (fragmentId: string) => {
+    toggleFragmentTeamTemplate(fragmentId);
+    const frag = fragments.find((f) => f.id === fragmentId);
+    if (frag) {
+      Taro.showToast({
+        title: frag.isTeamTemplate ? '已取消团队模板' : '已设为团队模板',
+        icon: 'success',
+      });
+      console.info('[Library] Toggle team template:', fragmentId);
     }
   };
 
@@ -239,8 +253,10 @@ const LibraryPage = () => {
               onUse={() => handleUseFragment(fragment)}
               onFavorite={() => handleToggleFavorite(fragment.id)}
               onMove={() => openMoveModal(fragment)}
+              onTeam={() => handleToggleTeamTemplate(fragment.id)}
               showFavorite
               showMove
+              showTeam
             />
           ))}
         </ScrollView>

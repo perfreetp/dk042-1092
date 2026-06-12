@@ -466,3 +466,40 @@
   font-weight: $font-weight-semibold;
   white-space: nowrap;
 }
+
+.fragCategoryTabs {
+  margin-bottom: $spacing-sm;
+}
+
+.fragCategoryTab {
+  display: inline-flex;
+  align-items: center;
+  height: 56rpx;
+  padding: 0 $spacing-md;
+  margin-right: $spacing-sm;
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  border: 1rpx solid $color-border;
+  transition: all $transition-fast;
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.fragCategoryTabActive {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border-color: transparent;
+  box-shadow: 0 4rpx 12rpx rgba($color-primary, 0.25);
+}
+
+.fragCategoryTabText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  white-space: nowrap;
+}
+
+.fragCategoryTabTextActive {
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}

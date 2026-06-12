@@ -17,12 +17,13 @@ const MOCK_RESPONSES = [
 
 const EditorPage = () => {
   const {
-    experiments, currentExperimentId, fragments,
-    addVersion, addSampleInput, addRunResult, clearResults,
+    experiments, currentExperimentId, fragments, categories,
+    addVersion, addSampleInput, addRunResult,
     updateExperimentPrompt, updateExperiment,
     pendingFragment, setPendingFragment,
     addVariable, renameVariable, deleteVariable, updateVariableDefault,
   } = usePromptStore();
+  const { getState } = usePromptStore as any;
 
   const currentExp = experiments.find((e) => e.id === currentExperimentId) || experiments[0];
 
@@ -41,6 +42,7 @@ const EditorPage = () => {
   const [newVarDefault, setNewVarDefault] = useState('');
 
   const [insertFlash, setInsertFlash] = useState(false);
+  const [fragQuickCategory, setFragQuickCategory] = useState<string>('收藏');
 
   const lastUpdateAt = useRef(currentExp?.updatedAt || '');
 
@@ -66,6 +68,16 @@ const EditorPage = () => {
   const variables = useMemo(() => extractVariables(promptContent), [promptContent]);
   const sensitiveWords = useMemo(() => detectSensitiveWords(promptContent), [promptContent]);
   const favoriteFragments = useMemo(() => fragments.filter((f) => f.isFavorite), [fragments]);
+
+  const quickCategoryTabs = useMemo(() => {
+    return ['收藏', '团队', ...categories];
+  }, [categories]);
+
+  const quickFragments = useMemo(() => {
+    if (fragQuickCategory === '收藏') return favoriteFragments;
+    if (fragQuickCategory === '团队') return fragments.filter((f) => f.isTeamTemplate);
+    return fragments.filter((f) => f.category === fragQuickCategory);
+  }, [fragQuickCategory, fragments, favoriteFragments]);
 
   const handlePromptChange = (value: string) => {
     setPromptContent(value);
@@ -133,19 +145,26 @@ const EditorPage = () => {
       return;
     }
 
+    if (promptContent !== currentExp.promptContent) {
+      updateExperimentPrompt(currentExp.id, promptContent, []);
+      lastUpdateAt.current = new Date().toISOString();
+    }
+
+    const expFresh = getState().experiments.find((e: any) => e.id === currentExp.id) || currentExp;
+
     let runVersionId = '';
     let runVersionNum = 0;
 
-    if (currentExp.versions.length === 0) {
-      const newVersion = addVersion(currentExp.id, '初始版本');
+    if (expFresh.versions.length === 0) {
+      const newVersion = addVersion(expFresh.id, '试跑自动生成');
       if (newVersion) {
         runVersionId = newVersion.id;
         runVersionNum = newVersion.versionNumber;
       }
     } else {
-      const latest = currentExp.versions[0];
-      if (currentExp.promptContent !== latest.content) {
-        const newVersion = addVersion(currentExp.id, `v${currentExp.versions.length + 1}`);
+      const latest = expFresh.versions[0];
+      if (promptContent !== latest.content) {
+        const newVersion = addVersion(expFresh.id, '编辑后试跑自动生成');
         if (newVersion) {
           runVersionId = newVersion.id;
           runVersionNum = newVersion.versionNumber;
@@ -162,13 +181,10 @@ const EditorPage = () => {
     }
 
     setIsRunning(true);
-    const oldSampleResults = currentExp.results.filter(
-      (r) => r.versionId !== runVersionId
-    );
 
     setTimeout(() => {
-      const newResults: RunResult[] = [];
-      currentExp.sampleInputs.forEach((sample) => {
+      const expForRun = getState().experiments.find((e: any) => e.id === expFresh.id) || expFresh;
+      expForRun.sampleInputs.forEach((sample) => {
         const responseIdx = Math.floor(Math.random() * MOCK_RESPONSES.length);
         const result: RunResult = {
           id: generateId(),
@@ -180,12 +196,14 @@ const EditorPage = () => {
           versionId: runVersionId,
           versionNumber: runVersionNum,
         };
-        newResults.push(result);
-        addRunResult(currentExp.id, result);
+        addRunResult(expForRun.id, result);
       });
-      updateExperiment(currentExp.id, { status: 'testing' });
+      updateExperiment(expForRun.id, { status: 'testing' });
       setIsRunning(false);
       Taro.showToast({ title: `v${runVersionNum} 试跑完成`, icon: 'success' });
+      setTimeout(() => {
+        Taro.switchTab({ url: '/pages/results/index' });
+      }, 500);
       console.info('[Editor] Batch run completed for version:', runVersionNum);
     }, 1500);
   };
@@ -366,25 +384,43 @@ const EditorPage = () => {
 
       <View className={styles.section}>
         <View className={styles.sectionHeader}>
-          <Text className={styles.sectionTitle}>收藏片段</Text>
-          <Text className={styles.sectionAction}>全部</Text>
+          <Text className={styles.sectionTitle}>片段快捷区</Text>
         </View>
-        {favoriteFragments.length > 0 ? (
+        <ScrollView scrollX className={styles.fragCategoryTabs}>
+          {quickCategoryTabs.map((cat) => (
+            <View
+              key={cat}
+              className={classnames(styles.fragCategoryTab, fragQuickCategory === cat && styles.fragCategoryTabActive)}
+              onClick={() => setFragQuickCategory(cat)}
+            >
+              <Text className={classnames(styles.fragCategoryTabText, fragQuickCategory === cat && styles.fragCategoryTabTextActive)}>
+                {cat}
+              </Text>
+            </View>
+          ))}
+        </ScrollView>
+        {quickFragments.length > 0 ? (
           <ScrollView scrollX className={styles.fragmentsScroll}>
-            {favoriteFragments.map((frag) => (
+            {quickFragments.map((frag) => (
               <View
                 key={frag.id}
                 className={styles.fragmentFavorite}
                 onClick={() => handleInsertFragment(frag.content, frag.title)}
               >
-                <Text className={styles.fragmentFavIcon}>⭐</Text>
+                <Text className={styles.fragmentFavIcon}>
+                  {fragQuickCategory === '收藏' ? '⭐' : fragQuickCategory === '团队' ? '🛡' : '📑'}
+                </Text>
                 <Text className={styles.fragmentFavText}>{frag.title}</Text>
               </View>
             ))}
           </ScrollView>
         ) : (
           <Text style={{ fontSize: '24rpx', color: '#8e8ea0', paddingLeft: '8rpx' }}>
-            还没有收藏片段，去素材库添加吧~
+            {fragQuickCategory === '收藏'
+              ? '还没有收藏片段，去素材库收藏吧~'
+              : fragQuickCategory === '团队'
+                ? '还没有团队模板片段~'
+                : '这个分类还没有片段~'}
           </Text>
         )}
       </View>

@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import Taro from '@tarojs/taro';
-import type { Experiment, Fragment, PromptVersion, RunResult, SampleInput, Variable, Comment } from '@/types';
+import type {
+  Experiment, Fragment, PromptVersion, RunResult, SampleInput, Variable, Comment, RecommendedVersion,
+} from '@/types';
 import { mockExperiments, mockFragments } from '@/data/experiments';
 import { generateId, extractVariables } from '@/utils/helpers';
 
@@ -51,6 +53,9 @@ interface PromptStore {
   addVersion: (experimentId: string, note: string) => PromptVersion | null;
   rollbackToVersion: (experimentId: string, versionId: string) => void;
   setBaseVersion: (experimentId: string, versionNumber: number | null) => void;
+  markVersionAsTeamTemplate: (experimentId: string, versionId: string, isTeam: boolean) => void;
+  updateVersionMeta: (experimentId: string, versionId: string, meta: Partial<PromptVersion>) => void;
+  computeRecommendedVersion: (experimentId: string) => RecommendedVersion | null;
 
   addVariable: (experimentId: string, varName: string, defaultValue?: string) => void;
   renameVariable: (experimentId: string, oldName: string, newName: string) => void;
@@ -60,6 +65,7 @@ interface PromptStore {
   addFragment: (frag: Fragment) => void;
   deleteFragment: (id: string) => void;
   toggleFragmentFavorite: (id: string) => void;
+  toggleFragmentTeamTemplate: (id: string) => void;
   incrementFragmentUsage: (id: string) => void;
   moveFragmentToCategory: (id: string, category: string) => void;
 
@@ -212,6 +218,102 @@ export const usePromptStore = create<PromptStore>((set, get) => {
       persist();
     },
 
+    markVersionAsTeamTemplate: (experimentId, versionId, isTeam) => {
+      set((state) => ({
+        experiments: state.experiments.map((e) => {
+          if (e.id !== experimentId) return e;
+          return {
+            ...e,
+            versions: e.versions.map((v) =>
+              v.id === versionId ? { ...v, isTeamTemplate: isTeam } : v
+            ),
+          };
+        }),
+      }));
+      persist();
+    },
+
+    updateVersionMeta: (experimentId, versionId, meta) => {
+      set((state) => ({
+        experiments: state.experiments.map((e) => {
+          if (e.id !== experimentId) return e;
+          return {
+            ...e,
+            versions: e.versions.map((v) =>
+              v.id === versionId ? { ...v, ...meta } : v
+            ),
+          };
+        }),
+      }));
+      persist();
+    },
+
+    computeRecommendedVersion: (experimentId) => {
+      const state = get();
+      const exp = state.experiments.find((e) => e.id === experimentId);
+      if (!exp || exp.versions.length === 0 || exp.results.length === 0) return null;
+
+      const ratedVersions = exp.versions.filter((v) => v.runCount > 0 && v.avgRating > 0);
+      if (ratedVersions.length === 0) return null;
+
+      const scored = ratedVersions.map((v) => {
+        const vResults = exp.results.filter((r) => r.versionId === v.id && r.rating > 0);
+        const sampleRatings: Record<string, number> = {};
+        vResults.forEach((r) => {
+          sampleRatings[r.sampleInputId] = r.rating;
+        });
+        return { version: v, sampleRatings, vResults };
+      });
+
+      scored.sort((a, b) => b.version.avgRating - a.version.avgRating);
+      const best = scored[0];
+      const second = scored[1];
+
+      let winningSamples: string[] = [];
+      if (second) {
+        Object.keys(best.sampleRatings).forEach((sid) => {
+          if (best.sampleRatings[sid] > (second.sampleRatings[sid] || 0)) {
+            const sample = exp.sampleInputs.find((s) => s.id === sid);
+            if (sample) winningSamples.push(sample.name);
+          }
+        });
+      } else {
+        winningSamples = Object.keys(best.sampleRatings)
+          .map((sid) => exp.sampleInputs.find((s) => s.id === sid)?.name)
+          .filter(Boolean) as string[];
+      }
+
+      const gap = second ? best.version.avgRating - second.version.avgRating : 999;
+      const confidence: 'high' | 'medium' | 'low' =
+        gap >= 1 ? 'high' : gap >= 0.3 ? 'medium' : 'low';
+
+      let reason = `v${best.version.versionNumber} 在 ${winningSamples.length} 个样例上表现最佳`;
+      if (winningSamples.length > 0 && winningSamples.length <= 3) {
+        reason += `（${winningSamples.join('、')}）`;
+      } else if (winningSamples.length > 3) {
+        reason += `（${winningSamples.slice(0, 3).join('、')} 等）`;
+      }
+      reason += `，整体平均分 ${best.version.avgRating.toFixed(1)}`;
+      if (gap > 0) reason += `，比次优版本高 ${gap.toFixed(1)} 分`;
+
+      const useCases = [
+        `${exp.name} 标准场景`,
+        `对 ${winningSamples[0] || '多数'} 样例要求较高的场景`,
+        confidence === 'high' ? '可直接用于生产环境' : '建议进一步验证后上线',
+      ];
+
+      return {
+        versionId: best.version.id,
+        versionNumber: best.version.versionNumber,
+        overallRating: best.version.avgRating,
+        sampleRatings: best.sampleRatings,
+        winningSamples,
+        reason,
+        useCases,
+        confidence,
+      };
+    },
+
     deleteExperiment: (id) => {
       set((state) => ({
         experiments: state.experiments.filter((e) => e.id !== id),
@@ -317,6 +419,15 @@ export const usePromptStore = create<PromptStore>((set, get) => {
       set((state) => ({
         fragments: state.fragments.map((f) =>
           f.id === id ? { ...f, isFavorite: !f.isFavorite } : f
+        ),
+      }));
+      persist();
+    },
+
+    toggleFragmentTeamTemplate: (id) => {
+      set((state) => ({
+        fragments: state.fragments.map((f) =>
+          f.id === id ? { ...f, isTeamTemplate: !f.isTeamTemplate } : f
         ),
       }));
       persist();

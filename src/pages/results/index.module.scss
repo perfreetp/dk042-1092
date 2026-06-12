@@ -368,6 +368,298 @@
   font-weight: $font-weight-semibold;
 }
 
+.decisionCard {
+  margin: 0 $spacing-lg $spacing-md;
+  background: linear-gradient(135deg, rgba(245, 166, 35, 0.08) 0%, rgba(245, 166, 35, 0.02) 100%);
+  border: 1rpx solid rgba(245, 166, 35, 0.3);
+  border-radius: $radius-lg;
+  padding: $spacing-md $spacing-lg;
+  box-shadow: 0 4rpx 16rpx rgba(245, 166, 35, 0.06);
+}
+
+.decisionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.decisionLabel {
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.confidenceTag {
+  padding: 4rpx 16rpx;
+  border-radius: $radius-xs;
+}
+
+.confidenceHigh {
+  background: rgba($color-success, 0.12);
+}
+
+.confidenceMedium {
+  background: rgba($color-warning, 0.15);
+}
+
+.confidenceLow {
+  background: rgba($color-text-tertiary, 0.1);
+}
+
+.confidenceTagText {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+
+  @at-root .confidenceHigh & {
+    color: $color-success;
+  }
+
+  @at-root .confidenceMedium & {
+    color: $color-warning;
+  }
+
+  @at-root .confidenceLow & {
+    color: $color-text-tertiary;
+  }
+}
+
+.decisionVersionRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+  flex-wrap: wrap;
+}
+
+.decisionVersionBadge {
+  background: linear-gradient(135deg, #f5a623 0%, #f7c766 100%);
+  border-radius: $radius-sm;
+  padding: 6rpx 20rpx;
+}
+
+.decisionVersionBadgeText {
+  font-size: $font-size-md;
+  color: #fff;
+  font-weight: $font-weight-bold;
+}
+
+.decisionRating {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.decisionRatingText {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.markTeamBtn {
+  background: $color-primary;
+  border-radius: $radius-button;
+  padding: 8rpx 24rpx;
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.markTeamBtnText {
+  font-size: $font-size-sm;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+}
+
+.teamBadged {
+  background: rgba($color-success, 0.1);
+  border-radius: $radius-button;
+  padding: 8rpx 24rpx;
+  border: 1rpx solid rgba($color-success, 0.3);
+}
+
+.teamBadgedText {
+  font-size: $font-size-sm;
+  color: $color-success;
+  font-weight: $font-weight-semibold;
+  white-space: nowrap;
+}
+
+.decisionReason {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-loose;
+  margin-bottom: $spacing-sm;
+  display: block;
+}
+
+.useCaseList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.useCaseItem {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-xs;
+}
+
+.useCaseDot {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-bold;
+  flex-shrink: 0;
+  line-height: 1.5;
+}
+
+.useCaseText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+}
+
+.versionBadgeRecommended {
+  background: linear-gradient(135deg, #f5a623 0%, #f7c766 100%);
+  box-shadow: 0 2rpx 8rpx rgba(245, 166, 35, 0.3);
+}
+
+.resultVersionBadgeRecommended {
+  background: linear-gradient(135deg, #f5a623 0%, #f7c766 100%);
+}
+
+.resultCommentRow {
+  margin-top: $spacing-sm;
+  padding-top: $spacing-sm;
+  border-top: 1rpx solid $color-border;
+}
+
+.resultCommentBtn {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
+.resultCommentSection {
+  margin-top: $spacing-sm;
+  background: $color-bg-page;
+  border-radius: $radius-sm;
+  padding: $spacing-sm;
+}
+
+.resultCommentItem {
+  display: flex;
+  margin-bottom: $spacing-sm;
+
+  &:last-child {
+    margin-bottom: $spacing-md;
+  }
+}
+
+.resultCommentAvatar {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 50%;
+  margin-right: $spacing-sm;
+  flex-shrink: 0;
+}
+
+.resultCommentBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.resultCommentMeta {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  margin-bottom: 4rpx;
+  flex-wrap: wrap;
+}
+
+.resultCommentAuthor {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.resultCommentVersion {
+  font-size: 20rpx;
+  background: $color-primary;
+  color: $color-text-white;
+  padding: 0 8rpx;
+  border-radius: $radius-xs;
+}
+
+.resultCommentSample {
+  font-size: 20rpx;
+  background: $color-tag-bg;
+  color: $color-tag-text;
+  padding: 0 8rpx;
+  border-radius: $radius-xs;
+}
+
+.resultCommentContent {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+  margin-bottom: 2rpx;
+}
+
+.resultCommentTime {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}
+
+.commentEmpty {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  text-align: center;
+  padding: $spacing-sm 0;
+}
+
+.resultCommentInputRow {
+  display: flex;
+  align-items: flex-end;
+  gap: $spacing-xs;
+  margin-top: $spacing-sm;
+  padding-top: $spacing-sm;
+  border-top: 1rpx solid $color-border;
+}
+
+.resultCommentInput {
+  flex: 1;
+  min-height: 64rpx;
+  background: $color-bg-card;
+  border: 1rpx solid $color-border;
+  border-radius: $radius-sm;
+  padding: $spacing-xs $spacing-sm;
+  font-size: $font-size-xs;
+  color: $color-text-primary;
+  line-height: $line-height-normal;
+}
+
+.resultCommentSendBtn {
+  background: $color-primary;
+  border-radius: $radius-sm;
+  padding: 8rpx 20rpx;
+  flex-shrink: 0;
+}
+
+.resultCommentSendText {
+  font-size: $font-size-xs;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+.resultCommentBtnList {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
 .commentModal {
   position: fixed;
   top: 0;

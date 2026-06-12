@@ -31,6 +31,20 @@ export interface PromptVersion {
   note: string;
   versionNumber: number;
   baseVersionNumber?: number;
+  isTeamTemplate?: boolean;
+  recommendedReason?: string;
+  useCases?: string[];
+}
+
+export interface RecommendedVersion {
+  versionId: string;
+  versionNumber: number;
+  overallRating: number;
+  sampleRatings: Record<string, number>;
+  winningSamples: string[];
+  reason: string;
+  useCases: string[];
+  confidence: 'high' | 'medium' | 'low';
 }
 
 export interface Comment {
@@ -43,6 +57,7 @@ export interface Comment {
   targetId: string;
   versionNumber?: number;
   sampleName?: string;
+  resultId?: string;
 }
 
 export interface Experiment {

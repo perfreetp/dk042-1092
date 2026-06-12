@@ -1,12 +1,12 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { View, Text, Input, Image, ScrollView, Picker } from '@tarojs/components';
+import { View, Text, Textarea, Image, ScrollView, Picker } from '@tarojs/components';
 import classnames from 'classnames';
 import Taro from '@tarojs/taro';
 import { usePromptStore } from '@/store/usePromptStore';
 import StarRating from '@/components/StarRating';
 import EmptyState from '@/components/EmptyState';
 import { generateId } from '@/utils/helpers';
-import type { RunResult, Comment } from '@/types';
+import type { RunResult, Comment, RecommendedVersion } from '@/types';
 import dayjs from 'dayjs';
 import styles from './index.module.scss';
 
@@ -25,11 +25,14 @@ const VIEW_MODES = [
 
 const SAMPLE_ALL = { id: 'all', name: '全部样例' };
 
+type CommentTargetType = 'sample' | 'result';
+
 const ResultsPage = () => {
   const {
     experiments, currentExperimentId,
-    updateRunResultRating, addRunResult, clearResults, addComment,
+    updateRunResultRating, addRunResult, addComment,
     updateExperiment, addVersion,
+    computeRecommendedVersion, markVersionAsTeamTemplate,
   } = usePromptStore();
 
   const currentExp = experiments.find((e) => e.id === currentExperimentId) || experiments[0];
@@ -37,14 +40,23 @@ const ResultsPage = () => {
   const [selectedSampleId, setSelectedSampleId] = useState('all');
   const [isRunning, setIsRunning] = useState(false);
   const [commentInput, setCommentInput] = useState('');
-  const [activeSampleId, setActiveSampleId] = useState<string | null>(null);
-  const [showCommentInput, setShowCommentInput] = useState(false);
+  const [commentTarget, setCommentTarget] = useState<{ type: CommentTargetType; id: string } | null>(null);
+  const [expandedResult, setExpandedResult] = useState<string | null>(null);
 
   const results = currentExp?.results || [];
   const allComments = currentExp?.comments || [];
   const sampleInputs = currentExp?.sampleInputs || [];
   const versions = currentExp?.versions || [];
   const latestVersion = versions[0];
+
+  const recommended: RecommendedVersion | null = useMemo(() => {
+    if (!currentExp) return null;
+    return computeRecommendedVersion(currentExp.id);
+  }, [currentExp, computeRecommendedVersion]);
+
+  const teamTemplateVersion = useMemo(() => {
+    return versions.find((v) => v.isTeamTemplate);
+  }, [versions]);
 
   const sampleOptions = useMemo(() => {
     return [SAMPLE_ALL, ...sampleInputs];
@@ -83,11 +95,11 @@ const ResultsPage = () => {
     return resultsBySample.filter((g) => g.sample?.id === selectedSampleId);
   }, [resultsBySample, selectedSampleId]);
 
-  const getSampleComments = (sampleId: string) => {
-    return allComments.filter(
-      (c) => c.targetType === 'sample' && c.targetId === sampleId
-    );
-  };
+  const getSampleComments = (sampleId: string) =>
+    allComments.filter((c) => c.targetType === 'sample' && c.targetId === sampleId);
+
+  const getResultComments = (resultId: string) =>
+    allComments.filter((c) => c.targetType === 'result' && c.targetId === resultId);
 
   const getRatingDiff = (result: RunResult): string | null => {
     const sameSampleResults = results.filter(
@@ -114,7 +126,7 @@ const ResultsPage = () => {
     let runVersionNum = 0;
 
     if (currentExp.versions.length === 0) {
-      const newVersion = addVersion(currentExp.id, '初始版本');
+      const newVersion = addVersion(currentExp.id, '试跑自动生成');
       if (newVersion) {
         runVersionId = newVersion.id;
         runVersionNum = newVersion.versionNumber;
@@ -122,7 +134,7 @@ const ResultsPage = () => {
     } else {
       const latest = currentExp.versions[0];
       if (currentExp.promptContent !== latest.content) {
-        const newVersion = addVersion(currentExp.id, `v${currentExp.versions.length + 1}`);
+        const newVersion = addVersion(currentExp.id, `编辑后试跑自动生成`);
         if (newVersion) {
           runVersionId = newVersion.id;
           runVersionNum = newVersion.versionNumber;
@@ -175,6 +187,9 @@ const ResultsPage = () => {
     text += `📋 提示词实验：${currentExp.name}\n`;
     text += `🔖 最新版本：v${latestVersion?.versionNumber || 0} - ${latestVersion?.note || '未保存'}\n`;
     text += `📊 最新版平均评分：${avgRating} / 5.0\n`;
+    if (recommended) {
+      text += `🏆 推荐版本：v${recommended.versionNumber}（${recommended.overallRating.toFixed(1)}分）\n`;
+    }
     if (selectedSampleId !== 'all') {
       const sampleName = sampleInputs.find(s => s.id === selectedSampleId)?.name || selectedSampleId;
       text += `🔍 筛选样例：${sampleName}\n`;
@@ -201,28 +216,60 @@ const ResultsPage = () => {
     });
   };
 
-  const handleAddSampleComment = (sampleId: string) => {
-    if (!currentExp) return;
+  const openSampleComment = (sampleId: string) => {
+    setCommentTarget({ type: 'sample', id: sampleId });
+    setCommentInput('');
+  };
+
+  const openResultComment = (resultId: string) => {
+    setCommentTarget({ type: 'result', id: resultId });
+    setCommentInput('');
+    setExpandedResult(resultId);
+  };
+
+  const handleSendComment = () => {
+    if (!currentExp || !commentTarget) return;
     if (!commentInput.trim()) {
       Taro.showToast({ title: '请输入评论内容', icon: 'none' });
       return;
     }
-    const sample = sampleInputs.find((s) => s.id === sampleId);
+
     const comment: Comment = {
       id: generateId(),
       author: '我',
       avatar: 'https://picsum.photos/id/1027/200/200',
       content: commentInput.trim(),
       createdAt: new Date().toISOString(),
-      targetType: 'sample',
-      targetId: sampleId,
-      sampleName: sample?.name,
+      targetType: commentTarget.type,
+      targetId: commentTarget.id,
     };
+
+    if (commentTarget.type === 'sample') {
+      const sample = sampleInputs.find((s) => s.id === commentTarget.id);
+      comment.sampleName = sample?.name;
+    } else {
+      const result = results.find((r) => r.id === commentTarget.id);
+      if (result) {
+        comment.resultId = result.id;
+        comment.versionNumber = result.versionNumber;
+        comment.sampleName = result.sampleName;
+      }
+    }
+
     addComment(currentExp.id, comment);
+    setCommentTarget(null);
     setCommentInput('');
-    setShowCommentInput(false);
     Taro.showToast({ title: '评论已发布', icon: 'success' });
-    console.info('[Results] Comment added to sample:', sampleId);
+    console.info('[Results] Comment added:', commentTarget.type, commentTarget.id);
+  };
+
+  const handleToggleTeamTemplate = (versionId: string, isTeam: boolean) => {
+    if (!currentExp) return;
+    markVersionAsTeamTemplate(currentExp.id, versionId, !isTeam);
+    Taro.showToast({
+      title: !isTeam ? '已设为团队模板' : '已取消团队模板',
+      icon: 'success',
+    });
   };
 
   const handleSampleChange = (e) => {
@@ -230,13 +277,8 @@ const ResultsPage = () => {
     setSelectedSampleId(sampleOptions[idx]?.id || 'all');
   };
 
-  const handleViewModeChange = (mode: string) => {
-    setViewMode(mode);
-  };
-
-  const openSampleComment = (sampleId: string) => {
-    setActiveSampleId(sampleId);
-    setShowCommentInput(true);
+  const toggleResultExpand = (resultId: string) => {
+    setExpandedResult(expandedResult === resultId ? null : resultId);
   };
 
   return (
@@ -264,6 +306,57 @@ const ResultsPage = () => {
         </View>
       </View>
 
+      {recommended && (
+        <View className={styles.decisionCard}>
+          <View className={styles.decisionHeader}>
+            <Text className={styles.decisionLabel}>🏆 推荐保留版本</Text>
+            <View className={classnames(
+              styles.confidenceTag,
+              recommended.confidence === 'high' && styles.confidenceHigh,
+              recommended.confidence === 'medium' && styles.confidenceMedium,
+              recommended.confidence === 'low' && styles.confidenceLow,
+            )}>
+              <Text className={styles.confidenceTagText}>
+                {recommended.confidence === 'high' ? '高置信' : recommended.confidence === 'medium' ? '中置信' : '低置信'}
+              </Text>
+            </View>
+          </View>
+
+          <View className={styles.decisionVersionRow}>
+            <View className={styles.decisionVersionBadge}>
+              <Text className={styles.decisionVersionBadgeText}>v{recommended.versionNumber}</Text>
+            </View>
+            <View className={styles.decisionRating}>
+              <StarRating value={Math.round(recommended.overallRating)} size={24} readonly />
+              <Text className={styles.decisionRatingText}>{recommended.overallRating.toFixed(1)} 分</Text>
+            </View>
+            {teamTemplateVersion?.id === recommended.versionId ? (
+              <View className={styles.teamBadged}>
+                <Text className={styles.teamBadgedText}>★ 团队模板</Text>
+              </View>
+            ) : (
+              <View
+                className={styles.markTeamBtn}
+                onClick={() => handleToggleTeamTemplate(recommended.versionId, false)}
+              >
+                <Text className={styles.markTeamBtnText}>设为团队模板</Text>
+              </View>
+            )}
+          </View>
+
+          <Text className={styles.decisionReason}>💡 {recommended.reason}</Text>
+
+          <View className={styles.useCaseList}>
+            {recommended.useCases.map((uc, idx) => (
+              <View key={idx} className={styles.useCaseItem}>
+                <Text className={styles.useCaseDot}>•</Text>
+                <Text className={styles.useCaseText}>{uc}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
+
       <View className={styles.filterBar}>
         <Picker
           mode="selector"
@@ -282,7 +375,7 @@ const ResultsPage = () => {
             <View
               key={m.key}
               className={classnames(styles.viewModeTab, viewMode === m.key && styles.viewModeTabActive)}
-              onClick={() => handleViewModeChange(m.key)}
+              onClick={() => setViewMode(m.key)}
             >
               <Text className={classnames(styles.viewModeTabText, viewMode === m.key && styles.viewModeTabActiveText)}>
                 {m.label}
@@ -298,7 +391,7 @@ const ResultsPage = () => {
           description="在编辑器中点击「批量试跑」查看结果"
         />
       ) : viewMode === 'bySample' ? (
-        <ScrollView scrollY className={styles.compareContainer} style={{ height: 'calc(100vh - 560rpx)' }}>
+        <ScrollView scrollY className={styles.compareContainer} style={{ height: recommended ? 'calc(100vh - 900rpx)' : 'calc(100vh - 560rpx)' }}>
           {displayedSampleResults.map((group) => (
             <View key={group.sample?.id || 'unknown'} className={styles.sampleGroup}>
               <View className={styles.sampleGroupHeader}>
@@ -316,7 +409,10 @@ const ResultsPage = () => {
                   {group.results.map((result) => (
                     <View key={result.id} className={styles.versionCard}>
                       <View className={styles.versionCardHeader}>
-                        <View className={styles.versionBadge}>
+                        <View className={classnames(
+                          styles.versionBadge,
+                          recommended?.versionId === result.versionId && styles.versionBadgeRecommended,
+                        )}>
                           <Text className={styles.versionBadgeText}>v{result.versionNumber}</Text>
                         </View>
                         {getRatingDiff(result) && (
@@ -341,6 +437,62 @@ const ResultsPage = () => {
                           {dayjs(result.createdAt).format('MM-DD HH:mm')}
                         </Text>
                       </View>
+
+                      <View className={styles.resultCommentRow}>
+                        <Text
+                          className={styles.resultCommentBtn}
+                          onClick={() => toggleResultExpand(result.id)}
+                        >
+                          💬 回答评论 ({getResultComments(result.id).length})
+                        </Text>
+                      </View>
+
+                      {expandedResult === result.id && (
+                        <View className={styles.resultCommentSection}>
+                          {getResultComments(result.id).length > 0 ? (
+                            getResultComments(result.id).map((c) => (
+                              <View key={c.id} className={styles.resultCommentItem}>
+                                <Image className={styles.resultCommentAvatar} src={c.avatar} mode="aspectFill" />
+                                <View className={styles.resultCommentBody}>
+                                  <View className={styles.resultCommentMeta}>
+                                    <Text className={styles.resultCommentAuthor}>{c.author}</Text>
+                                    {c.versionNumber && (
+                                      <Text className={styles.resultCommentVersion}>v{c.versionNumber}</Text>
+                                    )}
+                                    {c.sampleName && (
+                                      <Text className={styles.resultCommentSample}>{c.sampleName}</Text>
+                                    )}
+                                  </View>
+                                  <Text className={styles.resultCommentContent}>{c.content}</Text>
+                                  <Text className={styles.resultCommentTime}>
+                                    {dayjs(c.createdAt).format('MM-DD HH:mm')}
+                                  </Text>
+                                </View>
+                              </View>
+                            ))
+                          ) : (
+                            <Text className={styles.commentEmpty}>还没有评论</Text>
+                          )}
+                          <View className={styles.resultCommentInputRow}>
+                            <Textarea
+                              className={styles.resultCommentInput}
+                              placeholder={`针对 v${result.versionNumber} 的这条回答发表评论...`}
+                              value={commentTarget?.id === result.id && commentTarget?.type === 'result' ? commentInput : ''}
+                              onInput={(e) => {
+                                setCommentTarget({ type: 'result', id: result.id });
+                                setCommentInput(e.detail.value);
+                              }}
+                              onFocus={() => setCommentTarget({ type: 'result', id: result.id })}
+                              autoHeight
+                            />
+                            {commentTarget?.id === result.id && commentTarget?.type === 'result' && commentInput.trim() && (
+                              <View className={styles.resultCommentSendBtn} onClick={handleSendComment}>
+                                <Text className={styles.resultCommentSendText}>发送</Text>
+                              </View>
+                            )}
+                          </View>
+                        </View>
+                      )}
                     </View>
                   ))}
                 </View>
@@ -363,11 +515,14 @@ const ResultsPage = () => {
           ))}
         </ScrollView>
       ) : (
-        <ScrollView scrollY className={styles.resultsList} style={{ height: 'calc(100vh - 560rpx)' }}>
+        <ScrollView scrollY className={styles.resultsList} style={{ height: recommended ? 'calc(100vh - 900rpx)' : 'calc(100vh - 560rpx)' }}>
           {results.map((result) => (
             <View key={result.id} className={styles.resultItem}>
               <View className={styles.resultHeader}>
-                <View className={styles.resultVersionBadge}>
+                <View className={classnames(
+                  styles.resultVersionBadge,
+                  recommended?.versionId === result.versionId && styles.resultVersionBadgeRecommended,
+                )}>
                   <Text className={styles.resultVersionText}>v{result.versionNumber}</Text>
                 </View>
                 <Text className={styles.resultSampleName}>{result.sampleName}</Text>
@@ -383,6 +538,12 @@ const ResultsPage = () => {
                 <Text className={styles.resultTime}>
                   {dayjs(result.createdAt).format('MM-DD HH:mm')}
                 </Text>
+                <Text
+                  className={styles.resultCommentBtnList}
+                  onClick={() => openResultComment(result.id)}
+                >
+                  💬 {getResultComments(result.id).length}
+                </Text>
               </View>
             </View>
           ))}
@@ -393,11 +554,11 @@ const ResultsPage = () => {
         <Text className={styles.exportBtnText}>导出分享结果</Text>
       </View>
 
-      {showCommentInput && activeSampleId && (
-        <View className={styles.commentModal} onClick={() => setShowCommentInput(false)}>
+      {commentTarget?.type === 'sample' && (
+        <View className={styles.commentModal} onClick={() => setCommentTarget(null)}>
           <View className={styles.commentModalContent} onClick={(e) => e.stopPropagation()}>
             <Text className={styles.commentModalTitle}>
-              针对「{sampleInputs.find(s => s.id === activeSampleId)?.name}」发表评论
+              针对样例「{sampleInputs.find(s => s.id === commentTarget.id)?.name}」发表评论
             </Text>
             <Textarea
               className={styles.commentModalInput}
@@ -407,10 +568,10 @@ const ResultsPage = () => {
               autoHeight
             />
             <View className={styles.commentModalActions}>
-              <View className={styles.commentCancelBtn} onClick={() => setShowCommentInput(false)}>
+              <View className={styles.commentCancelBtn} onClick={() => setCommentTarget(null)}>
                 <Text className={styles.commentCancelText}>取消</Text>
               </View>
-              <View className={styles.commentSendBtn} onClick={() => handleAddSampleComment(activeSampleId)}>
+              <View className={styles.commentSendBtn} onClick={handleSendComment}>
                 <Text className={styles.commentSendText}>发送</Text>
               </View>
             </View>
