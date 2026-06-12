@@ -27,6 +27,7 @@ export interface PromptVersion {
   avgRating: number;
   runCount: number;
   note: string;
+  versionNumber: number;
 }
 
 export interface Comment {
@@ -59,6 +60,7 @@ export interface Fragment {
   content: string;
   category: string;
   isTeamTemplate: boolean;
+  isFavorite: boolean;
   usageCount: number;
   createdAt: string;
 }

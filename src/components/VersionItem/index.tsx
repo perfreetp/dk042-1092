@@ -29,10 +29,13 @@ const VersionItem: React.FC<VersionItemProps> = ({
       <View className={styles.content}>
         <View className={styles.contentHeader}>
           <View className={styles.versionInfo}>
+            <View className={styles.versionNum}>
+              <Text className={styles.versionNumText}>v{version.versionNumber}</Text>
+            </View>
             <Text className={styles.versionNote}>{version.note || '未命名版本'}</Text>
             {isCurrent && (
               <View className={styles.currentBadge}>
-                <Text className={styles.currentBadgeText}>当前</Text>
+                <Text className={styles.currentBadgeText}>最新</Text>
               </View>
             )}
           </View>

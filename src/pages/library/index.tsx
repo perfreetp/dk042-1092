@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, Input, Textarea, ScrollView } from '@tarojs/components';
+import { View, Text, ScrollView, Input, Textarea } from '@tarojs/components';
 import classnames from 'classnames';
 import Taro from '@tarojs/taro';
 import { usePromptStore } from '@/store/usePromptStore';
@@ -9,144 +9,134 @@ import { generateId } from '@/utils/helpers';
 import type { Fragment } from '@/types';
 import styles from './index.module.scss';
 
-const MAIN_TABS = [
-  { key: 'fragments', label: '常用片段' },
-  { key: 'templates', label: '团队模板' },
+const TAB_OPTIONS = [
+  { key: 'mine', label: '我的收藏' },
+  { key: 'team', label: '团队模板' },
 ];
+
+const DEFAULT_CATEGORIES = ['全部', '角色设定', '输出格式', '约束条件', '语气风格', '分析框架', '功能模板'];
 
 const LibraryPage = () => {
   const {
-    fragments, incrementFragmentUsage, addFragment,
-    setPendingFragment,
+    fragments, toggleFragmentFavorite, incrementFragmentUsage,
+    addFragment, updateFragmentCategory, setPendingFragment,
   } = usePromptStore();
-  const [activeTab, setActiveTab] = useState('fragments');
+  const [activeTab, setActiveTab] = useState('mine');
   const [searchText, setSearchText] = useState('');
   const [activeCategory, setActiveCategory] = useState('全部');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [newContent, setNewContent] = useState('');
-  const [newCategory, setNewCategory] = useState('');
+  const [newFragTitle, setNewFragTitle] = useState('');
+  const [newFragContent, setNewFragContent] = useState('');
+  const [newFragCategory, setNewFragCategory] = useState('通用');
+  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
 
-  const categories = useMemo(() => {
-    const cats = new Set(fragments.map((f) => f.category));
-    return ['全部', ...Array.from(cats)];
-  }, [fragments]);
-
-  const filteredFragments = useMemo(() => {
-    let result = fragments;
-    if (activeTab === 'templates') {
-      result = result.filter((f) => f.isTeamTemplate);
+  const displayFragments = useMemo(() => {
+    let list = [...fragments];
+    if (activeTab === 'mine') {
+      list = list.filter((f) => f.isFavorite);
     }
     if (activeCategory !== '全部') {
-      result = result.filter((f) => f.category === activeCategory);
+      list = list.filter((f) => f.category === activeCategory);
     }
-    if (searchText) {
-      result = result.filter(
-        (f) => f.title.includes(searchText) || f.content.includes(searchText) || f.category.includes(searchText)
+    if (searchText.trim()) {
+      const kw = searchText.trim().toLowerCase();
+      list = list.filter(
+        (f) => f.title.toLowerCase().includes(kw) || f.content.toLowerCase().includes(kw),
       );
     }
-    return result;
-  }, [fragments, activeTab, activeCategory, searchText]);
+    return list;
+  }, [fragments, activeTab, searchText, activeCategory]);
 
-  const handleUseFragment = (id: string) => {
-    const frag = fragments.find((f) => f.id === id);
-    if (!frag) return;
-    incrementFragmentUsage(id);
-    setPendingFragment(frag.content);
-    Taro.showToast({ title: '已插入编辑器', icon: 'success' });
-    console.info('[Library] Fragment used and inserted:', id);
+  const handleToggleFavorite = (fragmentId: string) => {
+    toggleFragmentFavorite(fragmentId);
+    const frag = fragments.find((f) => f.id === fragmentId);
+    if (frag) {
+      Taro.showToast({
+        title: frag.isFavorite ? '已取消收藏' : '已收藏',
+        icon: 'success',
+      });
+      console.info('[Library] Toggle favorite:', fragmentId);
+    }
+  };
+
+  const handleUseFragment = (fragment: Fragment) => {
+    incrementFragmentUsage(fragment.id);
+    setPendingFragment(fragment.content);
+    Taro.showToast({
+      title: '已插入到编辑器',
+      icon: 'success',
+      duration: 1200,
+    });
+    setTimeout(() => {
+      Taro.switchTab({ url: '/pages/editor/index' });
+    }, 600);
+    console.info('[Library] Use fragment:', fragment.id);
   };
 
   const handleAddFragment = () => {
-    if (!newTitle.trim()) {
-      Taro.showToast({ title: '请输入片段名称', icon: 'none' });
+    if (!newFragTitle.trim() || !newFragContent.trim()) {
+      Taro.showToast({ title: '请填写完整信息', icon: 'none' });
       return;
     }
-    if (!newContent.trim()) {
-      Taro.showToast({ title: '请输入片段内容', icon: 'none' });
-      return;
-    }
-    const frag: Fragment = {
+    const fragment: Fragment = {
       id: generateId(),
-      title: newTitle.trim(),
-      content: newContent.trim(),
-      category: newCategory.trim() || '自定义',
-      isTeamTemplate: false,
+      title: newFragTitle.trim(),
+      content: newFragContent.trim(),
+      category: newFragCategory,
+      isFavorite: activeTab === 'mine',
       usageCount: 0,
       createdAt: new Date().toISOString(),
     };
-    addFragment(frag);
+    addFragment(fragment);
     setShowAddModal(false);
-    setNewTitle('');
-    setNewContent('');
-    setNewCategory('');
-    Taro.showToast({ title: '片段已添加', icon: 'success' });
-    console.info('[Library] Fragment added:', frag.id);
+    setNewFragTitle('');
+    setNewFragContent('');
+    Taro.showToast({ title: '片段已保存', icon: 'success' });
+    console.info('[Library] Fragment added:', fragment.id);
   };
 
-  const handleExportText = () => {
-    if (filteredFragments.length === 0) {
-      Taro.showToast({ title: '暂无片段可导出', icon: 'none' });
-      return;
-    }
-    let text = '📦 提示词片段合集\n━━━━━━━━━━━━━\n\n';
-    filteredFragments.forEach((f, i) => {
-      text += `${i + 1}. 【${f.title}】(${f.category})\n${f.content}\n\n`;
-    });
-    Taro.setClipboardData({ data: text }).then(() => {
-      Taro.showToast({ title: '已复制到剪贴板', icon: 'success' });
-    }).catch((err) => {
-      console.error('[Library] Export failed:', err);
-      Taro.showToast({ title: '复制失败', icon: 'none' });
-    });
-  };
-
-  const handleShareLink = () => {
-    if (filteredFragments.length === 0) {
-      Taro.showToast({ title: '暂无片段可分享', icon: 'none' });
-      return;
-    }
-    const shareText = `提示词片段分享（${filteredFragments.length}个片段）\n\n${filteredFragments.slice(0, 3).map((f) => `• ${f.title}：${f.content.substring(0, 50)}...`).join('\n')}${filteredFragments.length > 3 ? '\n...' : ''}`;
-    Taro.setClipboardData({ data: shareText }).then(() => {
-      Taro.showToast({ title: '分享内容已复制', icon: 'success' });
-    }).catch((err) => {
-      console.error('[Library] Share failed:', err);
-      Taro.showToast({ title: '复制失败', icon: 'none' });
-    });
+  const handleCategoryChange = (category: string) => {
+    setActiveCategory(category);
+    setShowCategoryPicker(false);
   };
 
   return (
     <View className={styles.page}>
-      <View className={styles.tabBar}>
-        {MAIN_TABS.map((tab) => (
-          <View
-            key={tab.key}
-            className={classnames(styles.tab, activeTab === tab.key && styles.tabActive)}
-            onClick={() => setActiveTab(tab.key)}
-          >
-            <Text className={classnames(styles.tabText, activeTab === tab.key && styles.tabActiveText)}>
-              {tab.label}
-            </Text>
-          </View>
-        ))}
+      <View className={styles.header}>
+        <Text className={styles.title}>素材库</Text>
+        <Text className={styles.subtitle}>常用片段快速复用</Text>
       </View>
 
       <View className={styles.searchBar}>
         <Text className={styles.searchIcon}>🔍</Text>
         <Input
           className={styles.searchInput}
-          placeholder="搜索片段名称或内容"
+          placeholder="搜索片段..."
           value={searchText}
           onInput={(e) => setSearchText(e.detail.value)}
         />
       </View>
 
-      <ScrollView scrollX className={styles.categoryScroll}>
-        {categories.map((cat) => (
+      <View className={styles.tabBar}>
+        {TAB_OPTIONS.map((tab) => (
+          <View
+            key={tab.key}
+            className={classnames(styles.tabItem, activeTab === tab.key && styles.tabActive)}
+            onClick={() => setActiveTab(tab.key)}
+          >
+            <Text className={classnames(styles.tabText, activeTab === tab.key && styles.tabTextActive)}>
+              {tab.label}
+            </Text>
+          </View>
+        ))}
+      </View>
+
+      <ScrollView scrollX className={styles.categoryBar}>
+        {DEFAULT_CATEGORIES.map((cat) => (
           <View
             key={cat}
-            className={classnames(styles.categoryItem, activeCategory === cat && styles.categoryItemActive)}
-            onClick={() => setActiveCategory(cat)}
+            className={classnames(styles.categoryItem, activeCategory === cat && styles.categoryActive)}
+            onClick={() => handleCategoryChange(cat)}
           >
             <Text className={classnames(styles.categoryText, activeCategory === cat && styles.categoryTextActive)}>
               {cat}
@@ -155,81 +145,85 @@ const LibraryPage = () => {
         ))}
       </ScrollView>
 
-      <ScrollView scrollY className={styles.fragmentList} style={{ height: 'calc(100vh - 580rpx)' }}>
-        {filteredFragments.length > 0 ? (
-          filteredFragments.map((frag) => (
+      {displayFragments.length > 0 ? (
+        <ScrollView scrollY className={styles.fragmentList} style={{ height: 'calc(100vh - 600rpx)' }}>
+          {displayFragments.map((fragment) => (
             <FragmentCard
-              key={frag.id}
-              title={frag.title}
-              content={frag.content}
-              category={frag.category}
-              usageCount={frag.usageCount}
-              isTeamTemplate={frag.isTeamTemplate}
-              onUse={() => handleUseFragment(frag.id)}
+              key={fragment.id}
+              fragment={fragment}
+              onUse={() => handleUseFragment(fragment)}
+              onFavorite={() => handleToggleFavorite(fragment.id)}
+              showFavorite
             />
-          ))
-        ) : (
-          <EmptyState
-            title="暂无片段"
-            description="收藏常用提示词片段，编辑时快速插入"
-          />
-        )}
-      </ScrollView>
+          ))}
+        </ScrollView>
+      ) : (
+        <EmptyState
+          title="暂无素材片段"
+          description="点击右下角 + 添加常用片段"
+        />
+      )}
 
-      <View className={styles.exportSection}>
-        <Text className={styles.exportTitle}>导出分享</Text>
-        <View className={styles.exportActions}>
-          <View className={styles.exportBtn} onClick={handleExportText}>
-            <Text className={styles.exportBtnText}>导出文本</Text>
-          </View>
-          <View className={styles.exportBtn} onClick={handleShareLink}>
-            <Text className={styles.exportBtnText}>分享链接</Text>
-          </View>
-        </View>
-      </View>
-
-      <View className={styles.addBtn} onClick={() => setShowAddModal(true)}>
-        <Text className={styles.addText}>+</Text>
+      <View className={styles.fab} onClick={() => setShowAddModal(true)}>
+        <Text className={styles.fabText}>+</Text>
       </View>
 
       {showAddModal && (
         <View className={styles.modal} onClick={() => setShowAddModal(false)}>
           <View className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <View className={styles.modalHeader}>
-              <Text className={styles.modalTitle}>新增片段</Text>
-              <Text className={styles.modalClose} onClick={() => setShowAddModal(false)}>✕</Text>
-            </View>
-            <View className={styles.formGroup}>
-              <Text className={styles.formLabel}>片段名称</Text>
+            <Text className={styles.modalTitle}>新增素材片段</Text>
+
+            <View className={styles.formItem}>
+              <Text className={styles.formLabel}>标题</Text>
               <Input
                 className={styles.formInput}
-                placeholder="例如：语气风格-亲切"
-                value={newTitle}
-                onInput={(e) => setNewTitle(e.detail.value)}
+                placeholder="片段标题"
+                value={newFragTitle}
+                onInput={(e) => setNewFragTitle(e.detail.value)}
               />
             </View>
-            <View className={styles.formGroup}>
+
+            <View className={styles.formItem}>
               <Text className={styles.formLabel}>分类</Text>
-              <Input
-                className={styles.formInput}
-                placeholder="例如：语气风格"
-                value={newCategory}
-                onInput={(e) => setNewCategory(e.detail.value)}
-              />
+              <View className={styles.categoryOptions}>
+                {DEFAULT_CATEGORIES.filter(c => c !== '全部').map((cat) => (
+                  <View
+                    key={cat}
+                    className={classnames(
+                      styles.categoryOption,
+                      newFragCategory === cat && styles.categoryOptionActive,
+                    )}
+                    onClick={() => setNewFragCategory(cat)}
+                  >
+                    <Text className={classnames(
+                      styles.categoryOptionText,
+                      newFragCategory === cat && styles.categoryOptionTextActive,
+                    )}>
+                      {cat}
+                    </Text>
+                  </View>
+                ))}
+              </View>
             </View>
-            <View className={styles.formGroup}>
-              <Text className={styles.formLabel}>片段内容</Text>
+
+            <View className={styles.formItem}>
+              <Text className={styles.formLabel}>内容</Text>
               <Textarea
                 className={styles.formTextarea}
                 placeholder="输入提示词片段内容..."
-                value={newContent}
-                onInput={(e) => setNewContent(e.detail.value)}
-                maxlength={-1}
+                value={newFragContent}
+                onInput={(e) => setNewFragContent(e.detail.value)}
                 autoHeight
               />
             </View>
-            <View className={styles.confirmBtn} onClick={handleAddFragment}>
-              <Text className={styles.confirmBtnText}>确认添加</Text>
+
+            <View className={styles.modalActions}>
+              <View className={styles.modalBtnCancel} onClick={() => setShowAddModal(false)}>
+                <Text className={styles.modalBtnCancelText}>取消</Text>
+              </View>
+              <View className={styles.modalBtnConfirm} onClick={handleAddFragment}>
+                <Text className={styles.modalBtnConfirmText}>保存</Text>
+              </View>
             </View>
           </View>
         </View>

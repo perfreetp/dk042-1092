@@ -6,37 +6,21 @@
   padding-bottom: $spacing-xl;
 }
 
-.tabBar {
-  display: flex;
-  padding: $spacing-md $spacing-lg;
-  gap: $spacing-sm;
+.header {
+  padding: $spacing-xl $spacing-lg $spacing-md;
 }
 
-.tab {
-  padding: 10rpx 32rpx;
-  border-radius: $radius-button;
-  background: $color-bg-card;
-  border: 1rpx solid $color-border;
-  transition: all $transition-base;
-
-  &:active {
-    opacity: 0.85;
-  }
+.title {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  display: block;
+  margin-bottom: $spacing-xs;
 }
 
-.tabActive {
-  background: $color-primary;
-  border-color: $color-primary;
-}
-
-.tabText {
-  font-size: $font-size-md;
-  color: $color-text-secondary;
-  white-space: nowrap;
-}
-
-.tabActiveText {
-  color: $color-text-white;
+.subtitle {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
 }
 
 .searchBar {
@@ -64,15 +48,49 @@
   color: $color-text-disabled;
 }
 
-.categoryScroll {
+.tabBar {
+  display: flex;
+  padding: 0 $spacing-lg $spacing-md;
+  gap: $spacing-sm;
+}
+
+.tabItem {
+  padding: 10rpx 32rpx;
+  border-radius: $radius-button;
+  background: $color-bg-card;
+  border: 1rpx solid $color-border;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.tabActive {
+  background: $color-primary;
+  border-color: $color-primary;
+}
+
+.tabText {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  white-space: nowrap;
+}
+
+.tabTextActive {
+  color: $color-text-white;
+}
+
+.categoryBar {
   padding: 0 $spacing-lg;
   margin-bottom: $spacing-md;
+  white-space: nowrap;
 }
 
 .categoryItem {
   display: inline-flex;
   align-items: center;
-  padding: 8rpx 24rpx;
+  padding: 10rpx 28rpx;
   border-radius: $radius-button;
   background: $color-bg-card;
   border: 1rpx solid $color-border;
@@ -84,7 +102,7 @@
   }
 }
 
-.categoryItemActive {
+.categoryActive {
   background: $color-tag-bg;
   border-color: $color-primary;
 }
@@ -104,7 +122,7 @@
   padding: 0 $spacing-lg;
 }
 
-.addBtn {
+.fab {
   position: fixed;
   right: $spacing-lg;
   bottom: 180rpx;
@@ -123,51 +141,11 @@
   }
 }
 
-.addText {
+.fabText {
   font-size: $font-size-xxl;
   color: $color-text-white;
   font-weight: $font-weight-bold;
-}
-
-.exportSection {
-  margin: $spacing-md $spacing-lg;
-  background: $color-bg-card;
-  border-radius: $radius-lg;
-  padding: $spacing-lg;
-  box-shadow: $shadow-card;
-}
-
-.exportTitle {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  color: $color-text-primary;
-  margin-bottom: $spacing-md;
-}
-
-.exportActions {
-  display: flex;
-  gap: $spacing-md;
-}
-
-.exportBtn {
-  flex: 1;
-  height: $button-height-md;
-  background: $color-tag-bg;
-  border-radius: $radius-button;
-  @include flex-center;
-  transition: all $transition-base;
-
-  &:active {
-    opacity: 0.85;
-    transform: scale(0.98);
-  }
-}
-
-.exportBtnText {
-  font-size: $font-size-md;
-  color: $color-primary;
-  font-weight: $font-weight-medium;
-  white-space: nowrap;
+  line-height: 1;
 }
 
 .modal {
@@ -191,26 +169,15 @@
   overflow-y: auto;
 }
 
-.modalHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: $spacing-lg;
-}
-
 .modalTitle {
   font-size: $font-size-lg;
   font-weight: $font-weight-semibold;
   color: $color-text-primary;
+  margin-bottom: $spacing-lg;
+  display: block;
 }
 
-.modalClose {
-  font-size: $font-size-lg;
-  color: $color-text-tertiary;
-  padding: $spacing-xs;
-}
-
-.formGroup {
+.formItem {
   margin-bottom: $spacing-lg;
 }
 
@@ -231,6 +198,7 @@
   font-size: $font-size-md;
   color: $color-text-primary;
   box-sizing: border-box;
+  border: 1rpx solid $color-border;
 }
 
 .formInput::placeholder {
@@ -239,7 +207,7 @@
 
 .formTextarea {
   width: 100%;
-  min-height: 200rpx;
+  min-height: 240rpx;
   background: $color-bg-page;
   border-radius: $radius-md;
   padding: $spacing-md;
@@ -247,15 +215,52 @@
   color: $color-text-primary;
   line-height: $line-height-loose;
   box-sizing: border-box;
+  border: 1rpx solid $color-border;
 }
 
 .formTextarea::placeholder {
   color: $color-text-disabled;
 }
 
-.confirmBtn {
+.categoryOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.categoryOption {
+  padding: 10rpx 28rpx;
+  border-radius: $radius-button;
+  background: $color-bg-page;
+  border: 1rpx solid $color-border;
+  transition: all $transition-base;
+}
+
+.categoryOptionActive {
+  background: $color-primary;
+  border-color: $color-primary;
+}
+
+.categoryOptionText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  white-space: nowrap;
+}
+
+.categoryOptionTextActive {
+  color: $color-text-white;
+}
+
+.modalActions {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: $spacing-xl;
+}
+
+.modalBtnCancel,
+.modalBtnConfirm {
+  flex: 1;
   height: $button-height-lg;
-  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
   border-radius: $radius-button;
   @include flex-center;
   transition: all $transition-base;
@@ -266,9 +271,23 @@
   }
 }
 
-.confirmBtnText {
-  font-size: $font-size-lg;
+.modalBtnCancel {
+  background: $color-bg-page;
+  border: 1rpx solid $color-border;
+}
+
+.modalBtnConfirm {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+}
+
+.modalBtnCancelText {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.modalBtnConfirmText {
+  font-size: $font-size-md;
   color: $color-text-white;
   font-weight: $font-weight-semibold;
-  white-space: nowrap;
 }

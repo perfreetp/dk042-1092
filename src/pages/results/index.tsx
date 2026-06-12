@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { View, Text, Input, Image, ScrollView } from '@tarojs/components';
+import { View, Text, Input, Image, ScrollView, Picker } from '@tarojs/components';
 import classnames from 'classnames';
 import Taro from '@tarojs/taro';
 import { usePromptStore } from '@/store/usePromptStore';
@@ -23,6 +23,13 @@ const VIEW_TABS = [
   { key: 'compare', label: '对比' },
 ];
 
+const SORT_OPTIONS = [
+  { key: 'default', label: '默认排序' },
+  { key: 'rating_desc', label: '评分高→低' },
+  { key: 'rating_asc', label: '评分低→高' },
+  { key: 'time_desc', label: '最新在前' },
+];
+
 const ResultsPage = () => {
   const {
     experiments, currentExperimentId,
@@ -33,9 +40,14 @@ const ResultsPage = () => {
   const [viewMode, setViewMode] = useState('list');
   const [commentText, setCommentText] = useState('');
   const [isRunning, setIsRunning] = useState(false);
+  const [selectedSample, setSelectedSample] = useState('all');
+  const [sortKey, setSortKey] = useState('default');
 
   const results = currentExp?.results || [];
   const comments = currentExp?.comments || [];
+  const sampleInputs = currentExp?.sampleInputs || [];
+  const versions = currentExp?.versions || [];
+  const latestVersion = versions[0];
 
   const avgRating = useMemo(() => {
     const rated = results.filter((r) => r.rating > 0);
@@ -43,6 +55,31 @@ const ResultsPage = () => {
     const total = rated.reduce((sum, r) => sum + r.rating, 0);
     return (total / rated.length).toFixed(1);
   }, [results]);
+
+  const filteredResults = useMemo(() => {
+    let list = [...results];
+    if (selectedSample !== 'all') {
+      list = list.filter((r) => r.sampleInputId === selectedSample || r.sampleName === selectedSample);
+    }
+    switch (sortKey) {
+      case 'rating_desc':
+        list.sort((a, b) => b.rating - a.rating);
+        break;
+      case 'rating_asc':
+        list.sort((a, b) => a.rating - b.rating);
+        break;
+      case 'time_desc':
+        list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        break;
+      default:
+        break;
+    }
+    return list;
+  }, [results, selectedSample, sortKey]);
+
+  const sampleOptions = useMemo(() => {
+    return [{ id: 'all', name: '全部样例' }, ...sampleInputs];
+  }, [sampleInputs]);
 
   const handleRate = (resultId: string, rating: number) => {
     if (currentExp) {
@@ -60,7 +97,6 @@ const ResultsPage = () => {
     clearResults(currentExp.id);
 
     setTimeout(() => {
-      const vars = extractVariables(currentExp.promptContent);
       currentExp.sampleInputs.forEach((sample) => {
         const responseIdx = Math.floor(Math.random() * MOCK_RESPONSES.length);
         const result: RunResult = {
@@ -82,17 +118,26 @@ const ResultsPage = () => {
 
   const handleExport = () => {
     if (!currentExp || results.length === 0) return;
-    let text = `📋 提示词实验：${currentExp.name}\n`;
-    text += `━━━━━━━━━━━━━\n`;
+    let text = '';
+    text += `📋 提示词实验：${currentExp.name}\n`;
+    text += `🔖 最新版本：${latestVersion ? `v${latestVersion.versionNumber} - ${latestVersion.note}` : '未保存'}\n`;
+    text += `📊 平均评分：${avgRating} / 5.0\n`;
+    if (selectedSample !== 'all') {
+      const sampleName = sampleInputs.find(s => s.id === selectedSample || s.name === selectedSample)?.name || selectedSample;
+      text += `🔍 筛选样例：${sampleName}\n`;
+    }
+    text += `━━━━━━━━━━━━━\n\n`;
     text += `📝 提示词：\n${currentExp.promptContent}\n\n`;
-    results.forEach((r, i) => {
+    text += `━━━━━━━━━━━━━\n\n`;
+    filteredResults.forEach((r, i) => {
       text += `🧪 样例 ${i + 1}：${r.sampleName}\n`;
-      text += `⭐ 评分：${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}\n`;
-      text += `💬 回答：${r.output}\n\n`;
+      text += `⭐ 评分：${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}（${r.rating}/5）\n`;
+      text += `💬 回答：\n${r.output}\n\n`;
     });
-    text += `📊 平均评分：${avgRating}\n`;
+
     Taro.setClipboardData({ data: text }).then(() => {
       Taro.showToast({ title: '已复制到剪贴板', icon: 'success' });
+      console.info('[Results] Exported text copied');
     }).catch((err) => {
       console.error('[Results] Copy failed:', err);
       Taro.showToast({ title: '复制失败', icon: 'none' });
@@ -118,6 +163,16 @@ const ResultsPage = () => {
     console.info('[Results] Comment added:', comment.id);
   };
 
+  const handleSampleChange = (e) => {
+    const idx = e.detail.value;
+    setSelectedSample(sampleOptions[idx]?.id || 'all');
+  };
+
+  const handleSortChange = (e) => {
+    const idx = e.detail.value;
+    setSortKey(SORT_OPTIONS[idx]?.key || 'default');
+  };
+
   return (
     <View className={styles.page}>
       <View className={styles.overviewCard}>
@@ -137,30 +192,56 @@ const ResultsPage = () => {
             <Text className={styles.overviewStatLabel}>平均评分</Text>
           </View>
           <View className={styles.overviewStatItem}>
-            <Text className={styles.overviewStatValue}>{currentExp?.versions?.length || 0}</Text>
-            <Text className={styles.overviewStatLabel}>版本数</Text>
+            <Text className={styles.overviewStatValue}>v{latestVersion?.versionNumber || 0}</Text>
+            <Text className={styles.overviewStatLabel}>最新版本</Text>
           </View>
         </View>
       </View>
 
-      <View className={styles.tabBar}>
-        {VIEW_TABS.map((tab) => (
-          <View
-            key={tab.key}
-            className={classnames(styles.tab, viewMode === tab.key && styles.tabActive)}
-            onClick={() => setViewMode(tab.key)}
+      <View className={styles.filterBar}>
+        <View className={styles.filterLeft}>
+          <Picker
+            mode="selector"
+            range={sampleOptions.map((s) => s.name)}
+            onChange={handleSampleChange}
           >
-            <Text className={classnames(styles.tabText, viewMode === tab.key && styles.tabActiveText)}>
-              {tab.label}
-            </Text>
-          </View>
-        ))}
+            <View className={styles.filterPicker}>
+              <Text className={styles.filterPickerText}>
+                {sampleOptions.find(s => s.id === selectedSample)?.name || '全部样例'} ▾
+              </Text>
+            </View>
+          </Picker>
+          <Picker
+            mode="selector"
+            range={SORT_OPTIONS.map((s) => s.label)}
+            onChange={handleSortChange}
+          >
+            <View className={styles.filterPicker}>
+              <Text className={styles.filterPickerText}>
+                {SORT_OPTIONS.find(s => s.key === sortKey)?.label || '默认排序'} ▾
+              </Text>
+            </View>
+          </Picker>
+        </View>
+        <View className={styles.tabBarInline}>
+          {VIEW_TABS.map((tab) => (
+            <View
+              key={tab.key}
+              className={classnames(styles.tabInline, viewMode === tab.key && styles.tabInlineActive)}
+              onClick={() => setViewMode(tab.key)}
+            >
+              <Text className={classnames(styles.tabInlineText, viewMode === tab.key && styles.tabInlineActiveText)}>
+                {tab.label}
+              </Text>
+            </View>
+          ))}
+        </View>
       </View>
 
-      {results.length > 0 ? (
+      {filteredResults.length > 0 ? (
         viewMode === 'list' ? (
-          <ScrollView scrollY className={styles.resultsList} style={{ height: 'calc(100vh - 660rpx)' }}>
-            {results.map((result) => (
+          <ScrollView scrollY className={styles.resultsList} style={{ height: 'calc(100vh - 780rpx)' }}>
+            {filteredResults.map((result) => (
               <ResultCard
                 key={result.id}
                 result={result}
@@ -169,8 +250,8 @@ const ResultsPage = () => {
             ))}
           </ScrollView>
         ) : (
-          <ScrollView scrollY className={styles.compareMode} style={{ height: 'calc(100vh - 660rpx)' }}>
-            {results.map((result) => (
+          <ScrollView scrollY className={styles.compareMode} style={{ height: 'calc(100vh - 780rpx)' }}>
+            {filteredResults.map((result) => (
               <View key={result.id} className={styles.compareCard}>
                 <View className={styles.compareHeader}>
                   <Text className={styles.compareName}>{result.sampleName}</Text>
@@ -188,7 +269,7 @@ const ResultsPage = () => {
       )}
 
       <View className={styles.commentSection}>
-        <Text className={styles.commentTitle}>团队评论</Text>
+        <Text className={styles.commentTitle}>团队评论 ({comments.length})</Text>
         {comments.map((comment) => (
           <View key={comment.id} className={styles.commentItem}>
             <View className={styles.commentAvatar}>

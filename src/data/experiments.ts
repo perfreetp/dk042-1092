@@ -22,8 +22,8 @@ export const mockExperiments: Experiment[] = [
       { id: 'r003', sampleInputId: 's003', sampleName: '产品咨询', output: '您好！这款耳机确实支持主动降噪功能，降噪深度可达35dB，通勤和办公使用都非常适合。还有任何问题欢迎继续咨询~', rating: 4, createdAt: '2026-06-10T10:32:00Z' },
     ],
     versions: [
-      { id: 'v001', experimentId: 'exp001', content: '你是一位客服，请回复客户问题。\n客户问题：{{customer_question}}', variables: [{ name: 'customer_question', defaultValue: '' }], createdAt: '2026-06-08T14:00:00Z', avgRating: 2.5, runCount: 3, note: '初版' },
-      { id: 'v002', experimentId: 'exp001', content: '你是一位专业的客服人员，请根据客户问题生成礼貌、专业的回复。\n\n客户问题：{{customer_question}}\n产品类型：{{product_type}}\n情绪状态：{{emotion}}\n\n请生成回复，要求：1. 语气亲切 2. 解决问题 3. 不超过200字', variables: [{ name: 'customer_question', defaultValue: '' }, { name: 'product_type', defaultValue: '电子产品' }, { name: 'emotion', defaultValue: '平和' }], createdAt: '2026-06-10T10:00:00Z', avgRating: 4.3, runCount: 3, note: '增加产品和情绪变量' },
+      { id: 'v001', experimentId: 'exp001', content: '你是一位客服，请回复客户问题。\n客户问题：{{customer_question}}', variables: [{ name: 'customer_question', defaultValue: '' }], createdAt: '2026-06-08T14:00:00Z', avgRating: 2.5, runCount: 3, note: '初版', versionNumber: 1 },
+      { id: 'v002', experimentId: 'exp001', content: '你是一位专业的客服人员，请根据客户问题生成礼貌、专业的回复。\n\n客户问题：{{customer_question}}\n产品类型：{{product_type}}\n情绪状态：{{emotion}}\n\n请生成回复，要求：1. 语气亲切 2. 解决问题 3. 不超过200字', variables: [{ name: 'customer_question', defaultValue: '' }, { name: 'product_type', defaultValue: '电子产品' }, { name: 'emotion', defaultValue: '平和' }], createdAt: '2026-06-10T10:00:00Z', avgRating: 4.3, runCount: 3, note: '增加产品和情绪变量', versionNumber: 2 },
     ],
     comments: [
       { id: 'c001', author: '张三', avatar: 'https://picsum.photos/id/64/200/200', content: 'v2 版本效果提升明显，情绪变量很有用', createdAt: '2026-06-10T11:00:00Z' },
@@ -53,7 +53,7 @@ export const mockExperiments: Experiment[] = [
       { id: 'r005', sampleInputId: 's005', sampleName: '护肤精华', output: '焕采精华液，一瓶搞定美白+保湿！双重核心成分：5%烟酰胺精准淡斑，透明质酸深层锁水。轻透质地一抹即吸收，告别黏腻感。28天见证肌肤蜕变！', rating: 4, createdAt: '2026-06-09T15:31:00Z' },
     ],
     versions: [
-      { id: 'v003', experimentId: 'exp002', content: '你是一位资深电商文案，请为以下产品生成吸引人的详情描述。\n\n产品名称：{{product_name}}\n核心卖点：{{key_features}}\n目标人群：{{target_audience}}\n\n要求：1. 突出核心卖点 2. 语气有感染力 3. 300字以内', variables: [{ name: 'product_name', defaultValue: '' }, { name: 'key_features', defaultValue: '' }, { name: 'target_audience', defaultValue: '年轻白领' }], createdAt: '2026-06-09T15:00:00Z', avgRating: 4.5, runCount: 2, note: '首版' },
+      { id: 'v003', experimentId: 'exp002', content: '你是一位资深电商文案，请为以下产品生成吸引人的详情描述。\n\n产品名称：{{product_name}}\n核心卖点：{{key_features}}\n目标人群：{{target_audience}}\n\n要求：1. 突出核心卖点 2. 语气有感染力 3. 300字以内', variables: [{ name: 'product_name', defaultValue: '' }, { name: 'key_features', defaultValue: '' }, { name: 'target_audience', defaultValue: '年轻白领' }], createdAt: '2026-06-09T15:00:00Z', avgRating: 4.5, runCount: 2, note: '首版', versionNumber: 1 },
     ],
     comments: [
       { id: 'c003', author: '王五', avatar: 'https://picsum.photos/id/177/200/200', content: '文案很有感染力，emoji 用得好', createdAt: '2026-06-09T16:00:00Z' },
@@ -80,7 +80,7 @@ export const mockExperiments: Experiment[] = [
       { id: 'r006', sampleInputId: 's006', sampleName: '美食分享', output: '1. 🍰周末宅家也能做出神仙蛋糕！新手零失败~\n2. 谁说做蛋糕很难？这个配方闭眼冲！\n3. 姐妹们！这款蛋糕配方我私藏了好久...', rating: 3, createdAt: '2026-06-11T09:00:00Z' },
     ],
     versions: [
-      { id: 'v004', experimentId: 'exp003', content: '你是一位社交媒体运营专家，请为以下内容生成3个吸引眼球的标题。\n\n内容主题：{{topic}}\n平台：{{platform}}\n风格：{{style}}\n\n要求：1. 符合平台调性 2. 有吸引力 3. 包含关键词', variables: [{ name: 'topic', defaultValue: '' }, { name: 'platform', defaultValue: '小红书' }, { name: 'style', defaultValue: '活泼' }], createdAt: '2026-06-11T08:00:00Z', avgRating: 3.0, runCount: 1, note: '初版尝试' },
+      { id: 'v004', experimentId: 'exp003', content: '你是一位社交媒体运营专家，请为以下内容生成3个吸引眼球的标题。\n\n内容主题：{{topic}}\n平台：{{platform}}\n风格：{{style}}\n\n要求：1. 符合平台调性 2. 有吸引力 3. 包含关键词', variables: [{ name: 'topic', defaultValue: '' }, { name: 'platform', defaultValue: '小红书' }, { name: 'style', defaultValue: '活泼' }], createdAt: '2026-06-11T08:00:00Z', avgRating: 3.0, runCount: 1, note: '初版尝试', versionNumber: 1 },
     ],
     comments: [],
     status: 'draft',
@@ -125,7 +125,7 @@ export const mockExperiments: Experiment[] = [
       { id: 'r007', sampleInputId: 's008', sampleName: '退款政策', output: '根据上下文，食品类商品不支持退货。虽然您购买仅3天，在7天无理由退款期限内，但食品类属于不支持退货的品类，因此无法退款。', rating: 5, createdAt: '2026-06-11T14:00:00Z' },
     ],
     versions: [
-      { id: 'v005', experimentId: 'exp005', content: '你是一位知识问答助手，请根据用户问题从以下上下文中找到准确答案。\n\n上下文：{{context}}\n用户问题：{{question}}\n\n要求：1. 仅根据上下文回答 2. 如无答案请说明 3. 引用来源段落', variables: [{ name: 'context', defaultValue: '' }, { name: 'question', defaultValue: '' }], createdAt: '2026-06-11T13:00:00Z', avgRating: 5.0, runCount: 1, note: '初版效果不错' },
+      { id: 'v005', experimentId: 'exp005', content: '你是一位知识问答助手，请根据用户问题从以下上下文中找到准确答案。\n\n上下文：{{context}}\n用户问题：{{question}}\n\n要求：1. 仅根据上下文回答 2. 如无答案请说明 3. 引用来源段落', variables: [{ name: 'context', defaultValue: '' }, { name: 'question', defaultValue: '' }], createdAt: '2026-06-11T13:00:00Z', avgRating: 5.0, runCount: 1, note: '初版效果不错', versionNumber: 1 },
     ],
     comments: [
       { id: 'c004', author: '赵六', avatar: 'https://picsum.photos/id/338/200/200', content: '引用来源段落这个要求很好，减少幻觉', createdAt: '2026-06-11T15:00:00Z' },
@@ -138,14 +138,14 @@ export const mockExperiments: Experiment[] = [
 ];
 
 export const mockFragments: Fragment[] = [
-  { id: 'frag001', title: '角色设定-专业助手', content: '你是一位专业的{{role}}，拥有丰富的{{field}}经验。', category: '角色设定', isTeamTemplate: true, usageCount: 23, createdAt: '2026-05-20T10:00:00Z' },
-  { id: 'frag002', title: '输出格式-列表', content: '请按以下格式输出：\n1. {{item_1}}\n2. {{item_2}}\n3. {{item_3}}', category: '输出格式', isTeamTemplate: true, usageCount: 18, createdAt: '2026-05-21T10:00:00Z' },
-  { id: 'frag003', title: '约束条件-字数限制', content: '回复不超过{{max_length}}字，语言简洁精炼。', category: '约束条件', isTeamTemplate: false, usageCount: 15, createdAt: '2026-05-22T10:00:00Z' },
-  { id: 'frag004', title: '语气风格-亲切', content: '请用亲切友好的语气回复，像朋友一样交流。', category: '语气风格', isTeamTemplate: true, usageCount: 31, createdAt: '2026-05-23T10:00:00Z' },
-  { id: 'frag005', title: '多语言翻译', content: '请将以下内容翻译为{{target_lang}}，保持原文语气和风格：', category: '功能模板', isTeamTemplate: true, usageCount: 12, createdAt: '2026-05-24T10:00:00Z' },
-  { id: 'frag006', title: '分析框架-SWOT', content: '请从以下四个维度进行分析：\n- 优势(S)：{{strengths}}\n- 劣势(W)：{{weaknesses}}\n- 机会(O)：{{opportunities}}\n- 威胁(T)：{{threats}}', category: '分析框架', isTeamTemplate: false, usageCount: 8, createdAt: '2026-05-25T10:00:00Z' },
-  { id: 'frag007', title: '角色设定-创意写手', content: '你是一位富有创意的{{type}}写手，擅长{{style}}风格。', category: '角色设定', isTeamTemplate: false, usageCount: 19, createdAt: '2026-05-26T10:00:00Z' },
-  { id: 'frag008', title: '输出格式-表格', content: '请用表格形式展示，包含以下列：{{columns}}', category: '输出格式', isTeamTemplate: true, usageCount: 14, createdAt: '2026-05-27T10:00:00Z' },
-  { id: 'frag009', title: '约束条件-禁止事项', content: '回复中不要包含以下内容：{{forbidden}}。请严格遵守。', category: '约束条件', isTeamTemplate: false, usageCount: 7, createdAt: '2026-05-28T10:00:00Z' },
-  { id: 'frag010', title: '语气风格-正式商务', content: '请用正式的商务用语回复，措辞严谨、逻辑清晰。', category: '语气风格', isTeamTemplate: true, usageCount: 22, createdAt: '2026-05-29T10:00:00Z' },
+  { id: 'frag001', title: '角色设定-专业助手', content: '你是一位专业的{{role}}，拥有丰富的{{field}}经验。', category: '角色设定', isTeamTemplate: true, isFavorite: true, usageCount: 23, createdAt: '2026-05-20T10:00:00Z' },
+  { id: 'frag002', title: '输出格式-列表', content: '请按以下格式输出：\n1. {{item_1}}\n2. {{item_2}}\n3. {{item_3}}', category: '输出格式', isTeamTemplate: true, isFavorite: true, usageCount: 18, createdAt: '2026-05-21T10:00:00Z' },
+  { id: 'frag003', title: '约束条件-字数限制', content: '回复不超过{{max_length}}字，语言简洁精炼。', category: '约束条件', isTeamTemplate: false, isFavorite: false, usageCount: 15, createdAt: '2026-05-22T10:00:00Z' },
+  { id: 'frag004', title: '语气风格-亲切', content: '请用亲切友好的语气回复，像朋友一样交流。', category: '语气风格', isTeamTemplate: true, isFavorite: true, usageCount: 31, createdAt: '2026-05-23T10:00:00Z' },
+  { id: 'frag005', title: '多语言翻译', content: '请将以下内容翻译为{{target_lang}}，保持原文语气和风格：', category: '功能模板', isTeamTemplate: true, isFavorite: false, usageCount: 12, createdAt: '2026-05-24T10:00:00Z' },
+  { id: 'frag006', title: '分析框架-SWOT', content: '请从以下四个维度进行分析：\n- 优势(S)：{{strengths}}\n- 劣势(W)：{{weaknesses}}\n- 机会(O)：{{opportunities}}\n- 威胁(T)：{{threats}}', category: '分析框架', isTeamTemplate: false, isFavorite: false, usageCount: 8, createdAt: '2026-05-25T10:00:00Z' },
+  { id: 'frag007', title: '角色设定-创意写手', content: '你是一位富有创意的{{type}}写手，擅长{{style}}风格。', category: '角色设定', isTeamTemplate: false, isFavorite: false, usageCount: 19, createdAt: '2026-05-26T10:00:00Z' },
+  { id: 'frag008', title: '输出格式-表格', content: '请用表格形式展示，包含以下列：{{columns}}', category: '输出格式', isTeamTemplate: true, isFavorite: false, usageCount: 14, createdAt: '2026-05-27T10:00:00Z' },
+  { id: 'frag009', title: '约束条件-禁止事项', content: '回复中不要包含以下内容：{{forbidden}}。请严格遵守。', category: '约束条件', isTeamTemplate: false, isFavorite: false, usageCount: 7, createdAt: '2026-05-28T10:00:00Z' },
+  { id: 'frag010', title: '语气风格-正式商务', content: '请用正式的商务用语回复，措辞严谨、逻辑清晰。', category: '语气风格', isTeamTemplate: true, isFavorite: false, usageCount: 22, createdAt: '2026-05-29T10:00:00Z' },
 ];

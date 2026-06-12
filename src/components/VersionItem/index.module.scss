@@ -71,6 +71,20 @@
   margin-right: $spacing-sm;
 }
 
+.versionNum {
+  background: $color-tag-bg;
+  border-radius: $radius-xs;
+  padding: 2rpx 12rpx;
+  margin-right: $spacing-sm;
+  flex-shrink: 0;
+}
+
+.versionNumText {
+  font-size: $font-size-xs;
+  color: $color-tag-text;
+  font-weight: $font-weight-semibold;
+}
+
 .versionNote {
   font-size: $font-size-md;
   font-weight: $font-weight-semibold;

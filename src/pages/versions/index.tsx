@@ -14,6 +14,7 @@ const VersionsPage = () => {
 
   const versions = currentExp?.versions || [];
   const selectedVersion = versions.find((v) => v.id === selectedVersionId);
+  const latestVersion = versions[0];
 
   const bestRating = useMemo(() => {
     if (versions.length === 0) return 0;
@@ -22,10 +23,20 @@ const VersionsPage = () => {
 
   const handleRollback = (versionId: string) => {
     if (!currentExp) return;
-    rollbackToVersion(currentExp.id, versionId);
-    setSelectedVersionId(null);
-    Taro.showToast({ title: '已回退到该版本', icon: 'success' });
-    console.info('[Versions] Rollback to version:', versionId);
+    const version = versions.find((v) => v.id === versionId);
+    if (!version) return;
+    Taro.showModal({
+      title: '回退版本',
+      content: `确定要回退到 v${version.versionNumber} 吗？将创建一个新版本保留回退记录。`,
+      success: (res) => {
+        if (res.confirm) {
+          rollbackToVersion(currentExp.id, versionId);
+          setSelectedVersionId(null);
+          Taro.showToast({ title: `已回退到 v${version.versionNumber}`, icon: 'success' });
+          console.info('[Versions] Rollback to version:', versionId);
+        }
+      },
+    });
   };
 
   return (
@@ -61,7 +72,7 @@ const VersionsPage = () => {
               isCurrent={index === 0}
               isLatest={index === 0}
               onClick={() => setSelectedVersionId(version.id)}
-              onRollback={() => handleRollback(version.id)}
+              onRollback={index === 0 ? undefined : () => handleRollback(version.id)}
             />
           ))}
         </ScrollView>
@@ -76,7 +87,10 @@ const VersionsPage = () => {
         <View className={styles.detailModal} onClick={() => setSelectedVersionId(null)}>
           <View className={styles.detailContent} onClick={(e) => e.stopPropagation()}>
             <View className={styles.detailHeader}>
-              <Text className={styles.detailTitle}>{selectedVersion.note || '版本详情'}</Text>
+              <View className={styles.detailTitleRow}>
+                <Text className={styles.detailVersionTag}>v{selectedVersion.versionNumber}</Text>
+                <Text className={styles.detailTitle}>{selectedVersion.note}</Text>
+              </View>
               <Text className={styles.detailClose} onClick={() => setSelectedVersionId(null)}>✕</Text>
             </View>
             <View className={styles.detailPrompt}>
@@ -94,9 +108,11 @@ const VersionsPage = () => {
               <Text className={styles.detailMetaText}>试跑 {selectedVersion.runCount} 次</Text>
               <Text className={styles.detailMetaText}>{selectedVersion.createdAt}</Text>
             </View>
-            <View className={styles.rollbackAction} onClick={() => handleRollback(selectedVersion.id)}>
-              <Text className={styles.rollbackActionText}>回退到此版本</Text>
-            </View>
+            {selectedVersion.id !== latestVersion?.id && (
+              <View className={styles.rollbackAction} onClick={() => handleRollback(selectedVersion.id)}>
+                <Text className={styles.rollbackActionText}>回退到此版本</Text>
+              </View>
+            )}
           </View>
         </View>
       )}

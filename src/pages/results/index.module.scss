@@ -45,6 +45,58 @@
   white-space: nowrap;
 }
 
+.filterBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 $spacing-lg;
+  margin-bottom: $spacing-md;
+}
+
+.filterLeft {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.filterPicker {
+  background: $color-bg-card;
+  border-radius: $radius-sm;
+  padding: 10rpx 20rpx;
+  border: 1rpx solid $color-border;
+}
+
+.filterPickerText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.tabBarInline {
+  display: flex;
+  background: $color-bg-card;
+  border-radius: $radius-sm;
+  padding: 4rpx;
+  border: 1rpx solid $color-border;
+}
+
+.tabInline {
+  padding: 8rpx 20rpx;
+  border-radius: $radius-xs;
+}
+
+.tabInlineActive {
+  background: $color-primary;
+}
+
+.tabInlineText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.tabInlineActiveText {
+  color: $color-text-white;
+}
+
 .overviewStats {
   display: flex;
   justify-content: space-around;
