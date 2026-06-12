@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
+import Taro from '@tarojs/taro';
 import { usePromptStore } from '@/store/usePromptStore';
 import VersionItem from '@/components/VersionItem';
 import VariableHighlight from '@/components/VariableHighlight';
@@ -7,7 +8,7 @@ import EmptyState from '@/components/EmptyState';
 import styles from './index.module.scss';
 
 const VersionsPage = () => {
-  const { experiments, currentExperimentId } = usePromptStore();
+  const { experiments, currentExperimentId, rollbackToVersion } = usePromptStore();
   const currentExp = experiments.find((e) => e.id === currentExperimentId) || experiments[0];
   const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
 
@@ -20,8 +21,11 @@ const VersionsPage = () => {
   }, [versions]);
 
   const handleRollback = (versionId: string) => {
-    console.info('[Versions] Rollback to version:', versionId);
+    if (!currentExp) return;
+    rollbackToVersion(currentExp.id, versionId);
     setSelectedVersionId(null);
+    Taro.showToast({ title: '已回退到该版本', icon: 'success' });
+    console.info('[Versions] Rollback to version:', versionId);
   };
 
   return (
@@ -64,7 +68,7 @@ const VersionsPage = () => {
       ) : (
         <EmptyState
           title="暂无版本记录"
-          description="保存提示词后将自动生成版本记录"
+          description="在编辑器中保存提示词后将自动生成版本记录"
         />
       )}
 

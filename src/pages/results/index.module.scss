@@ -3,6 +3,7 @@
 .page {
   min-height: 100vh;
   background: $color-bg-page;
+  padding-bottom: $spacing-xl;
 }
 
 .overviewCard {
@@ -103,12 +104,12 @@
 
 .resultsList {
   padding: 0 $spacing-lg;
-  padding-bottom: $spacing-xl;
+  padding-bottom: $spacing-md;
 }
 
 .compareMode {
   padding: 0 $spacing-lg;
-  padding-bottom: $spacing-xl;
+  padding-bottom: $spacing-md;
 }
 
 .compareCard {
@@ -205,6 +206,48 @@
   font-size: $font-size-xs;
   color: $color-text-tertiary;
   margin-top: 4rpx;
+}
+
+.commentInput {
+  display: flex;
+  align-items: center;
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.commentInputField {
+  flex: 1;
+  height: $button-height-sm;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: 0 $spacing-md;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  margin-right: $spacing-sm;
+}
+
+.commentInputField::placeholder {
+  color: $color-text-disabled;
+}
+
+.commentSendBtn {
+  background: $color-primary;
+  border-radius: $radius-button;
+  padding: 10rpx 24rpx;
+  flex-shrink: 0;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.commentSendText {
+  font-size: $font-size-sm;
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
 }
 
 .exportBtn {

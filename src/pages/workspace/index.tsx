@@ -1,9 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, Input, ScrollView } from '@tarojs/components';
+import { View, Text, Input, Textarea, ScrollView } from '@tarojs/components';
 import classnames from 'classnames';
+import Taro from '@tarojs/taro';
 import { usePromptStore } from '@/store/usePromptStore';
 import ExperimentCard from '@/components/ExperimentCard';
 import EmptyState from '@/components/EmptyState';
+import { generateId, extractVariables } from '@/utils/helpers';
+import type { Variable } from '@/types';
 import dayjs from 'dayjs';
 import styles from './index.module.scss';
 
@@ -15,9 +18,13 @@ const STATUS_FILTERS = [
 ];
 
 const WorkspacePage = () => {
-  const { experiments, setCurrentExperiment } = usePromptStore();
+  const { experiments, setCurrentExperiment, addExperiment } = usePromptStore();
   const [searchText, setSearchText] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newDesc, setNewDesc] = useState('');
+  const [newPrompt, setNewPrompt] = useState('');
 
   const filteredExperiments = useMemo(() => {
     return experiments.filter((exp) => {
@@ -36,6 +43,39 @@ const WorkspacePage = () => {
   const handleExperimentClick = (id: string) => {
     setCurrentExperiment(id);
     console.info('[Workspace] Selected experiment:', id);
+  };
+
+  const handleCreate = () => {
+    if (!newName.trim()) {
+      Taro.showToast({ title: '请输入实验名称', icon: 'none' });
+      return;
+    }
+    const vars = extractVariables(newPrompt);
+    const variables: Variable[] = vars.map((v) => ({ name: v, defaultValue: '' }));
+    const now = new Date().toISOString();
+    const newExp = {
+      id: generateId(),
+      name: newName.trim(),
+      description: newDesc.trim(),
+      promptContent: newPrompt,
+      variables,
+      sampleInputs: [],
+      results: [],
+      versions: [],
+      comments: [],
+      status: 'draft' as const,
+      tags: [],
+      createdAt: now,
+      updatedAt: now,
+    };
+    addExperiment(newExp);
+    setCurrentExperiment(newExp.id);
+    setShowCreateModal(false);
+    setNewName('');
+    setNewDesc('');
+    setNewPrompt('');
+    Taro.showToast({ title: '创建成功', icon: 'success' });
+    console.info('[Workspace] Created experiment:', newExp.id);
   };
 
   return (
@@ -104,9 +144,52 @@ const WorkspacePage = () => {
         )}
       </ScrollView>
 
-      <View className={styles.fabBtn}>
+      <View className={styles.fabBtn} onClick={() => setShowCreateModal(true)}>
         <Text className={styles.fabText}>+</Text>
       </View>
+
+      {showCreateModal && (
+        <View className={styles.modal} onClick={() => setShowCreateModal(false)}>
+          <View className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <View className={styles.modalHeader}>
+              <Text className={styles.modalTitle}>新建实验</Text>
+              <Text className={styles.modalClose} onClick={() => setShowCreateModal(false)}>✕</Text>
+            </View>
+            <View className={styles.formGroup}>
+              <Text className={styles.formLabel}>实验名称</Text>
+              <Input
+                className={styles.formInput}
+                placeholder="例如：客服话术生成"
+                value={newName}
+                onInput={(e) => setNewName(e.detail.value)}
+              />
+            </View>
+            <View className={styles.formGroup}>
+              <Text className={styles.formLabel}>实验描述</Text>
+              <Input
+                className={styles.formInput}
+                placeholder="简述实验目的"
+                value={newDesc}
+                onInput={(e) => setNewDesc(e.detail.value)}
+              />
+            </View>
+            <View className={styles.formGroup}>
+              <Text className={styles.formLabel}>初始提示词</Text>
+              <Textarea
+                className={styles.formTextarea}
+                placeholder="输入提示词，使用 {{变量名}} 标记变量占位..."
+                value={newPrompt}
+                onInput={(e) => setNewPrompt(e.detail.value)}
+                maxlength={-1}
+                autoHeight
+              />
+            </View>
+            <View className={styles.createBtn} onClick={handleCreate}>
+              <Text className={styles.createBtnText}>创建实验</Text>
+            </View>
+          </View>
+        </View>
+      )}
     </View>
   );
 };
